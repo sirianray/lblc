@@ -1,0 +1,26 @@
+newrun 1
+wall 1
+wall_anchoring 1
+W_bot -1
+W_top TOP
+nbot 0 1 0
+ntop 0 0 1
+rand_init 1
+rand_seed RANDOM
+ninit 0 0 1
+flow_on 1
+Q_on 1
+t_max 100000000
+t_v_on -1
+t_print 1000
+tau_f 0.56
+uy_top 0.005
+uy_bottom 0
+yforce 0
+kappa 0.05
+rho 1
+A_ldg 1
+U 3.5
+xi 0.8
+Gamma_rot 0.33775
+debug_mode 0

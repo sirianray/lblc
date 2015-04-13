@@ -1,0 +1,35 @@
+newrun 1
+simul_evol 1
+Nx 4
+Ny 4
+Nz 41
+wall_inf 1
+wall_degen 0
+W_wall 0.0
+nbot 0 1 0
+ntop 0 0 1
+cav_on 0
+cav_inf 1
+cav_degen 0
+W_cav 0.1
+cav_height 5
+cav_width 10
+ncavtop 0 1 0
+ncavsides 0 1 0
+rand_init 0
+rand_seed 73827364
+u_on 1
+Q_on 1
+t_max 100000000
+t_print 1000
+tau_f 5
+uy_top 0.0001
+uy_bottom 0
+yforce 0
+kappa 0.05
+rho 1
+A_ldg 1
+U 3.5
+xi 0.8
+Gamma_rot 0.33775
+movie 0
