@@ -21,7 +21,7 @@ void add_patch()
 		if (jmax>=Ny) jmax=Ny-1;
 
 		for (j=jmin; j<=jmax; j++) {
-			for (i=0; i<=Nx; i++) {
+			for (i=0; i<Nx; i++) {
 				id = i + j*Nx;
 				surf[id*10]  = type_patch;
 				surf[id*10+1]= W_patch;
