@@ -472,6 +472,10 @@ void cal_stress()
 			h[1][2] = H[iq+4];
 			h[2][1] = h[1][2];
 			h[2][2] =-H[iq]-H[iq+3];
+
+			sigma_p[id*3]  =-2.0 * (H[iq]*dxQ[0] + H[iq+1]*dxQ[1] + H[iq+2]*dxQ[2] + H[iq+3]*dxQ[3] + H[iq+4]*dxQ[4]) - H[iq]*dxQ[3] - H[iq+3]*dxQ[0];
+			sigma_p[id*3+1]=-2.0 * (H[iq]*dyQ[0] + H[iq+1]*dyQ[1] + H[iq+2]*dyQ[2] + H[iq+3]*dyQ[3] + H[iq+4]*dyQ[4]) - H[iq]*dyQ[3] - H[iq+3]*dyQ[0];
+			sigma_p[id*3+2]=-2.0 * (H[iq]*dzQ[0] + H[iq+1]*dzQ[1] + H[iq+2]*dzQ[2] + H[iq+3]*dzQ[3] + H[iq+4]*dzQ[4]) - H[iq]*dzQ[3] - H[iq+3]*dzQ[0]; 
 			
 			sum = 2.0*(Q[iq]*H[iq]+Q[iq+3]*H[iq+3]+Q[iq+1]*H[iq+1]+Q[iq+2]*H[iq+2]+Q[iq+4]*H[iq+4])+Q[iq]*H[iq+3]+Q[iq+3]*H[iq];
 
@@ -481,13 +485,14 @@ void cal_stress()
 			
 			for(ii=0;ii<3;ii++){
 				for(jj=0;jj<3;jj++){
-					temp = (0.5*kappa*dQ2+eld)*Delta(ii,jj) + 2*xi*M[ii][jj]*sum;
+					temp = (0.*kappa*dQ2)*Delta(ii,jj) + 2*xi*M[ii][jj]*sum;
+
 					
 					for(mm=0;mm<3;mm++){
 						temp += (1.0-xi)*M[ii][mm]*h[mm][jj]-(xi+1.0)*h[ii][mm]*M[mm][jj];
 					}
 					
-					temp += -kappa * dQ[ii][jj];
+//					temp += -kappa * dQ[ii][jj];
 					sigma_q[id*9+ii*3+jj] = temp;
 				}
 			}
@@ -520,17 +525,17 @@ void cal_sigma_p()
                         idzmm= idzmm>=0?(int)(idzmm/15)*9:(int)(idzmm/15-1)*9;
 			
 			if (npar==0 || idxm!=id && idxp!=id) {
-				sigma_p[is]  = 0.5 * (sigma_q[idxp]  - sigma_q[idxm]);
-				sigma_p[is+1]= 0.5 * (sigma_q[idxp+3]- sigma_q[idxm+3]);
-				sigma_p[is+2]= 0.5 * (sigma_q[idxp+6]- sigma_q[idxm+6]);
+				sigma_p[is]  += 0.5 * (sigma_q[idxp]  - sigma_q[idxm]);
+				sigma_p[is+1]+= 0.5 * (sigma_q[idxp+3]- sigma_q[idxm+3]);
+				sigma_p[is+2]+= 0.5 * (sigma_q[idxp+6]- sigma_q[idxm+6]);
 			} else if (idxm==id) {
-				sigma_p[is]  = sigma_q[idxp]  - sigma_q[id];
-				sigma_p[is+1]= sigma_q[idxp+3]- sigma_q[id+3];
-				sigma_p[is+2]= sigma_q[idxp+6]- sigma_q[id+6];
+				sigma_p[is]  += sigma_q[idxp]  - sigma_q[id];
+				sigma_p[is+1]+= sigma_q[idxp+3]- sigma_q[id+3];
+				sigma_p[is+2]+= sigma_q[idxp+6]- sigma_q[id+6];
 			} else if (idxp==id) {
-				sigma_p[is]  = sigma_q[id]  - sigma_q[idxm];
-				sigma_p[is+1]= sigma_q[id+3]- sigma_q[idxm+3];
-				sigma_p[is+2]= sigma_q[id+6]- sigma_q[idxm+6];
+				sigma_p[is]  += sigma_q[id]  - sigma_q[idxm];
+				sigma_p[is+1]+= sigma_q[id+3]- sigma_q[idxm+3];
+				sigma_p[is+2]+= sigma_q[id+6]- sigma_q[idxm+6];
 			}
 		
 			if (npar==0 || idym!=id && idyp!=id) {

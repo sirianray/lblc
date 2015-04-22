@@ -263,8 +263,8 @@ void output3(int new)
 	}
 	
 	for (id=0; id<points; id++) {
-		fprintf(rfile,"%f\n",Rho[id]);
-		fprintf(ufile,"%f %f %f\n",u[id*3],u[id*3+1],u[id*3+2]);
+		fprintf(rfile,"%e\n",Rho[id]);
+		fprintf(ufile,"%e %e %e\n",u[id*3],u[id*3+1],u[id*3+2]);
 	}
 	
 	if (Q_on!=0 && flow_on!=0) {
@@ -313,7 +313,7 @@ void monitor()
 			
 			printf("vel=%20.15f %20.15f %20.15f\n",utotal[0], utotal[1], utotal[2]);
 			printf("rho=%20.15f\n",rhototal);
-			if (k_eng==0) {
+			if (k_eng<5e-25 && k_eng>-5e-25) {
 				k_diff = k_eng_new-k_eng;
 			} else {
 				k_diff = (k_eng_new-k_eng)/k_eng;
