@@ -252,8 +252,7 @@ void cal_dQ()
 					}
 				}
 				for (ii=0; ii<5; ii++) {
-//					H[iq+ii] = dxQ[ii]*surf[ip+2]+dyQ[ii]*surf[ip+3]+dzQ[ii]*surf[ip+4];
-					H[iq+ii] = dxQ[ii]*abs(surf[ip+2])+dyQ[ii]*abs(surf[ip+3])+dzQ[ii]*abs(surf[ip+4]);
+					H[iq+ii] = dxQ[ii]*fabs(surf[ip+2])+dyQ[ii]*fabs(surf[ip+3])+dzQ[ii]*fabs(surf[ip+4]);
 				}
 				if (flag==1) {
 					for (ii=0; ii<4; ii++) {
