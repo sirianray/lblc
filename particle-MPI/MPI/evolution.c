@@ -88,7 +88,7 @@ void streaming(real *fin, real *fout)
 					}
 				}
 			}
-			if (npar>0 && idn/15==ip) {
+			if (npar>0 && abs(id-idn)<15) {
 				if(ii<7) {
 					Bx2 = two3rd  * rho;
 				} else {
