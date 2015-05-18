@@ -133,7 +133,7 @@ int main(int argc, char *argv[]){
 		if (t_current%t_print==0) monitor();
 		if (t_current%t_write==0 && myid==0) {
 			output1(0,'z',Nx/2,Ny/2);
-//			output3(0);
+			output3(0);
 		}
 		t_current++;
 	}

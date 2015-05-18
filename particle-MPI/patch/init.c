@@ -20,9 +20,17 @@ void init()
 				srand((unsigned)rand_seed);
 			}
 			
-			if ( (wall_on!=0 || npar>0) && Q_on!=0) {
+			if ( (wall_on!=0 || npar>0 || patch_on!=0) && Q_on!=0) {
 				for (i=0; i<nsurf; i++) {
-					for (j=0; j<5; j++) Qsurf[i*5+j] = surf[i*10+5+j];
+					if (rand_init>=0) {
+						nx = randvec();
+						ny = randvec();
+						nz = randvec();
+	                                        ntoq(nx, ny, nz, &q[0], &q[1], &q[2], &q[3], &q[4], &q[5]);
+						for (j=0; j<5; j++) Qsurf[i*5+j] = q[j];
+					} else {
+						for (j=0; j<5; j++) Qsurf[i*5+j] = surf[i*10+5+j];
+					}
 				}
 			}
 			

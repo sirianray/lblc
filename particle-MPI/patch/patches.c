@@ -48,7 +48,7 @@ int onpatch(int idx, int idy, int idz)
 		imax =      ((double)Nx - 1.0 + patchx) * 0.5;
 		jmin = ceil(((double)Ny - 1.0 - patchy) * 0.5);
 		jmax =      ((double)Ny - 1.0 + patchy) * 0.5;
-		kmax = patchz;
+		kmax = patchz - 1.0;
 		if (idx>=imin && idx<=imax && idy>=jmin && idy <=jmax && idz<=kmax) return 1; 
 	}
 	return -1;
