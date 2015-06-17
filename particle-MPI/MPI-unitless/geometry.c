@@ -23,7 +23,7 @@ void init_surf()
 				id = 10 * (i + j*Nx);
 				if (Q_on!=0) {
 					surf[id]   = type_bot;
-					surf[id+1] = W_bot;
+					surf[id+1] = 2.*S_lc*S_lc*W_bot;
 					surf[id+2] = 0;
 					surf[id+3] = 0;
 					surf[id+4] = 1.0;
@@ -42,7 +42,7 @@ void init_surf()
 				id = id0 + 10 * (i + j*Nx);
 				if (Q_on!=0) {
 					surf[id]   = type_top;
-					surf[id+1] = W_top;
+					surf[id+1] = 2.*S_lc*S_lc*W_top;
 					surf[id+2] = 0;
 					surf[id+3] = 0;
 					surf[id+4] =-1.0;

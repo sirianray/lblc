@@ -217,7 +217,7 @@ void p_iden()
 									if (nsurf/node==myid) {
 										id        = 10*(nsurf%node);
 										surf[id]  = p_Wtype[ipar];
-										surf[id+1]= p_W[ipar];
+										surf[id+1]= 2.*S_lc*S_lc*p_W[ipar];
 										normalize(&x,&y,&z);
 										surf[id+2]= x;
 										surf[id+3]= y;

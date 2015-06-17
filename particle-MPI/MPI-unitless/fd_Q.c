@@ -77,7 +77,7 @@ void evol_Q()
 				ip = iq * 2;
 				if (surf[ip]==1) {
 					for (ii=0; ii<5; ii++) {
-						Qsurf[iq+ii] += -qdt*Gamma_rot*(-kappa*Hsurf[iq+ii]+surf[ip+1]*(Qsurf[iq+ii]-surf[ip+5+ii]));
+						Qsurf[iq+ii] += -qdt*Gamma_rot*(-Hsurf[iq+ii]/l0+surf[ip+1]*(Qsurf[iq+ii]-surf[ip+5+ii]));
 					}
 				} else if (surf[ip]==2) {
 					for(ii=0; ii<3; ii++) nu[ii] = surf[ip+2+ii];
@@ -134,7 +134,7 @@ void evol_Q()
 					for(ii=0;ii<5;ii++){
 						if(ii==0 || ii==3) temp = third*nuQnu;
 						else temp = 0;
-						Qsurf[iq+ii] += - qdt*Gamma_rot * (-kappa * Hsurf[iq+ii] + 2.0*surf[ip+1]*( (Qtildevec[ii]-Qperpvec[ii]) - temp));
+						Qsurf[iq+ii] += - qdt*Gamma_rot * (-Hsurf[iq+ii]/l0 + 2.0*surf[ip+1]*( (Qtildevec[ii]-Qperpvec[ii]) - temp));
 						if(flag==1)e_sfi+= surf[ip+1]*(Qtildevec[ii]-Qperpvec[ii])*(Qtildevec[ii]-Qperpvec[ii]);
 					}
 					if(flag==1)e_sfi += surf[ip+1]*(Qtildevec[0]-Qperpvec[0])*(Qtildevec[3]-Qperpvec[3]);

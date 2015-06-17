@@ -24,7 +24,7 @@ void add_patch()
 			for (i=0; i<Nx; i++) {
 				id = i + j*Nx;
 				surf[id*10]  = type_patch;
-				surf[id*10+1]= W_patch;
+				surf[id*10+1]= 2.*S_lc*S_lc*W_patch;
 				ntoq(x, y, z, &q[0], &q[1], &q[2], &q[3], &q[4], &q[5]);
 				for (ii=0; ii<5; ii++) surf[id*10+5+ii]=q[ii];
 			}
