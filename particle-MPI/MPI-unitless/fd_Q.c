@@ -339,7 +339,7 @@ void cal_dQ()
 					Hsurf[iq+ii] = dxQ[ii]*fabs(surf[ip+2])+dyQ[ii]*fabs(surf[ip+3])+dzQ[ii]*fabs(surf[ip+4]);
 				}
 				if (flag==1 && surf[ip]==1) {
-					for (ii=0; ii<4; ii++) {
+					for (ii=0; ii<5; ii++) {
 						e_sfi += surf[ip+1]*(Qsurf[iq+ii]-surf[ip+5+ii])*(Qsurf[iq+ii]-surf[ip+5+ii]);
 					}
 					e_sfi += surf[ip+1]*(Qsurf[iq]-surf[ip+5])*(Qsurf[iq+3]-surf[ip+5+3]);
