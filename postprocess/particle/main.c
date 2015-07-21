@@ -6,9 +6,10 @@
 
 int main(){
 
-	FILE *grid, *file, *ufile, *rfile, *Qfile, *sfile;
+	FILE *grid, *file, *ufile, *rfile, *Qfile, *sfile, *ifile;
 	float *g1, *g2, *g3, *v1, *v2, *v3;
 	float a[9], w[3], u[3], S, density;
+	int *gi;
 	int Nx, Ny, Nz, points, lines=0, i, m, info, junk;
 	char ch, mfile[256];
 
@@ -22,6 +23,7 @@ int main(){
         v1 = malloc(points*sizeof(float));
         v2 = malloc(points*sizeof(float));
         v3 = malloc(points*sizeof(float));
+	gi = malloc(points*sizeof(int));
 
 	printf("READ IN PARAMETERS\n");
 	printf("number of points: %d\n",points);
@@ -39,7 +41,7 @@ int main(){
         printf("Number of movie frames: %d\n", lines);
 
 	for(i=0;i<points;i++){
-		fscanf(grid,"%f %f %f %d\n", &g1[i], &g2[i], &g3[i], &junk);
+		fscanf(grid,"%f %f %f %d\n", &g1[i], &g2[i], &g3[i], &gi[i]);
 	}
 	fclose(grid);
 
@@ -47,6 +49,7 @@ int main(){
 	rfile=fopen("rho_3d.out","r");
 	Qfile=fopen("Q_3d.out","r");
 	sfile=fopen("stress_3d.out","r");
+	ifile=fopen("type_3d.out","r");
 	
 	for(m=0;m<lines;m++){
 		sprintf(mfile,"movie_%05d.vtk",m);
@@ -64,9 +67,20 @@ int main(){
                 	fprintf(file,"\t%0.2f\t%0.2f\t%0.2f\n", g1[i], g2[i], g3[i]);
                 }
 
-		fprintf(file,"\n");
+                fprintf(file,"\n");
 
-		fprintf(file,"POINT_DATA\t%d\n",points);
+                fprintf(file,"POINT_DATA\t%d\n",points);
+
+                if(ifile!=NULL){
+                        fprintf(file,"SCALARS type int 1\n");
+                        for(i=0;i<points;i++){
+                                fscanf(ifile,"%d\n",&gi[i]);
+                                fprintf(file,"\t%d\n",gi[i]);
+                        }
+			fprintf(file,"\n");
+                }
+
+//		fprintf(file,"POINT_DATA\t%d\n",points);
                 fprintf(file,"SCALARS S_field float 1\n");
                 fprintf(file,"LOOKUP_TABLE default\n");
 
@@ -85,7 +99,7 @@ int main(){
 			v2[i] = a[7];
 			v3[i] = a[8];
 
-			fprintf(file,"\t%0.2f\n",S);
+			fprintf(file,"\t%lf\n",S);
 		}
 		
 		fprintf(file,"\n");
@@ -130,6 +144,7 @@ int main(){
 	if(rfile!=NULL)fclose(rfile);
 	fclose(Qfile);
 	if(sfile!=NULL)fclose(sfile);
+	if(ifile!=NULL)fclose(ifile);
 
 	free(g1);
         free(g2);
@@ -137,6 +152,7 @@ int main(){
         free(v1);
         free(v2);
         free(v3);
+	free(gi);
 
 	printf("done!\n");
    
