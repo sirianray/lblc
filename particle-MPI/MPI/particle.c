@@ -94,8 +94,13 @@ void p_init()
 
 int onsurface(double x, double y, double z, int ipar)
 {
-	double dx, dy, dz, r2p=p_rad[ipar]*p_rad[ipar], r2;
+	double dx, dy, dz, rp, r2p, r2;
 	
+	rp = p_rad[ipar];
+	r2p= rp*rp;
+
+	if (rp==0) return -1;
+
 	dx = x - p_pos[ipar*3];
 	dy = y - p_pos[ipar*3+1];
 	dz = z - p_pos[ipar*3+2];
@@ -108,9 +113,9 @@ int onsurface(double x, double y, double z, int ipar)
 		if (dz> hLz) dz-=Lz;
 	}
 	r2 = dx*dx + dy*dy + dz*dz;
-	if (r2>r2p) {
+	if ( (r2>r2p && rp>0) || (r2<r2p && rp<0)) {
 		return -1;
-	} else if (r2<r2p) {
+	} else if ( (r2<r2p && rp>0) || (r2>r2p && rp<0) ) {
 		return 1;
 	} else {
 		return 0;
@@ -122,13 +127,19 @@ void p_iden()
 	int ipar, xlo, xhi, ylo, yhi, zlo, zhi, x1, y1, z1, x2, y2, z2, i1, j1, k1, i2, j2, k2, i3, j3, k3;
 	int i, j, k, ii, id, id1, id2, id3, di, p1, p2, nlink=0;
 	int si, sj, sk, sid, sii, sjj;
-	double x0, y0, z0, r, x, y, z, ubx, uby, ubz, omegax, omegay, omegaz, ub_dot_e, q[6];
+	double x0, y0, z0, r, x, y, z, ubx, uby, ubz, omegax, omegay, omegaz, ub_dot_e, q[6], as;
 
 	for (ipar=0; ipar<npar; ipar++) {
 		x0  = p_pos[ipar*3];	// C.O.M of ipar'th particle
 		y0  = p_pos[ipar*3+1];
 		z0  = p_pos[ipar*3+2];
 		r   = p_rad[ipar];
+		if (r<0) {
+			r=-r;
+			as=-1.;
+		} else {
+			as=1.;
+		}
 //		boundaries of search box for particle # ipar
 		xlo = (int)(x0-r-1.01);
 		xhi = (int)(x0+r+1.01);
@@ -140,7 +151,15 @@ void p_iden()
 			if(zlo <  0)  zlo = 0;
 			if(zhi >= Nz) zhi = Nz-1;
 		}
-		
+		if (as==-1) {
+			xlo=0;
+			xhi=Nx-1;
+                        ylo=0;
+                        yhi=Ny-1;
+                        zlo=0;
+                        zhi=Nz-1;
+		}
+
 		for (z1=zlo; z1<=zhi; z1++) {
 			for (y1=ylo; y1<=yhi; y1++) {
 				for (x1=xlo; x1<=xhi; x1++) {
@@ -188,6 +207,9 @@ void p_iden()
 								x  -= x0;
 								y  -= y0;
 								z  -= z0;
+								x  *= as;
+                                                                y  *= as;
+                                                                z  *= as;
 								
 								if (flow_on!=0) {			//	modify streaming
 									omegax = p_angv[ipar*3];
