@@ -73,6 +73,7 @@ int main(){
 
                 if(ifile!=NULL){
                         fprintf(file,"SCALARS type int 1\n");
+			fprintf(file,"LOOKUP_TABLE default\n");
                         for(i=0;i<points;i++){
                                 fscanf(ifile,"%d\n",&gi[i]);
                                 fprintf(file,"\t%d\n",gi[i]);
@@ -106,7 +107,7 @@ int main(){
                 fprintf(file,"VECTORS directors float\n");
 
 		for(i=0;i<points;i++){
-			fprintf(file,"\t%0.2f\t%0.2f\t%0.2f\n",v1[i],v2[i],v3[i]);
+			fprintf(file,"\t%f\t%f\t%f\n",v1[i],v2[i],v3[i]);
 		}
 
 		fprintf(file,"\n");

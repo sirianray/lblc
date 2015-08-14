@@ -1,11 +1,13 @@
 #include "main.h"
+#include "particle.h"
 #include <time.h>
 
 void init()
 {
-	int i, j, k, ii, ip, id;
+	int i, j, k, ii, ip, id, ipar;
 	time_t t;
 	double nx, ny, nz, q[6], sita0, sita, lambda1, lambda2;
+	double dx, dy, dz, ir, ir2, ir3;
 	
 	if (newrun_on!=0) {
 		if (myid==0) {
@@ -45,6 +47,21 @@ void init()
 							nx = randvec();
 							ny = randvec();
 							nz = randvec();
+                                                } else if (rand_init==-2 && npar>0) {
+                                                        nx = n_bot[0];
+                                                        ny = n_bot[1];
+                                                        nz = n_bot[2];
+                                                        for (ipar=0; ipar<npar; ipar++) {
+                                                                dx = (double)i-p_pos[ipar*3+0];
+                                                                dy = (double)j-p_pos[ipar*3+1];
+                                                                dz = (double)k-p_pos[ipar*3+2];
+                                                                ir2= 1./(dx*dx+dy*dy+dz*dz);
+                                                                ir = sqrt(ir2);
+                                                                ir3= ir*ir2;
+                                                                nx += q_init*p_rad[ipar]*p_rad[ipar]*dx*ir3;
+                                                                ny += q_init*p_rad[ipar]*p_rad[ipar]*dy*ir3;
+                                                                nz += q_init*p_rad[ipar]*p_rad[ipar]*dz*ir3;
+                                                        }
 						}
 						ntoq(nx, ny, nz, &q[0], &q[1], &q[2], &q[3], &q[4], &q[5]);
 						for (ii=0; ii<5; ii++) Q[id*5+ii] = q[ii];

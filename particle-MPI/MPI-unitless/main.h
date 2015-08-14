@@ -80,7 +80,7 @@ extern int t_current, t_max, t_print, t_write;
 extern int n_evol_Q,  uconverge, qconverge;
 extern int bulk0, qlength;
 extern int type_bot, type_top;
-extern double dt, qdt, tau_f, itau_f, kappa, xi, xi1, xi2, Gamma_rot, rho, U_lc, S_lc, A_ldg, Temp, e[15][3], l0, tau, nu, strcf;
+extern double dt, qdt, tau_f, itau_f, kappa, xi, xi1, xi2, Gamma_rot, rho, U_lc, S_lc, A_ldg, Temp, e[15][3], q_init, l0, tau, nu, strcf;
 extern double ux_top, ux_bot, uy_top, uy_bot, xforce, yforce;
 extern double qthreshold, uthreshold, k_eng, Q_diff, e_toto, e_tot, e_ld, e_el, e_sf, Fld0;
 extern double W_top, W_bot, n_top[3], n_bot[3];

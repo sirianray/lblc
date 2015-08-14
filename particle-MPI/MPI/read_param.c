@@ -17,7 +17,7 @@ void read_param()
 	fscanf(param, "flow_on %d\n", &flow_on);
 	fscanf(param, "Q_on %d\n", &Q_on);
 
-	fscanf(param, "rand_init rand_seed %d %d\n", &rand_init, &rand_seed);
+	fscanf(param, "rand_init rand_seed q_init %d %d %lf\n", &rand_init, &rand_seed, &q_init);
 	
 	fscanf(param, "t_max t_print t_write %d %d %d\n", &t_max, &t_print, &t_write);
 	

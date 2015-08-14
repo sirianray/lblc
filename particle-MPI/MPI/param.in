@@ -5,7 +5,7 @@ patch_on 0
 wall_on 1 
 flow_on 1
 Q_on 1 
-rand_init rand_seed -1 12901
+rand_init rand_seed q_init -1 12901 2.0
 t_max t_print t_write 1000000 100 1000
 n_evol_Q 2
 type_bot W_bot n_bot 0  1  1 0 0 

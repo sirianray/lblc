@@ -17,7 +17,7 @@ int t_current, t_max, t_print, t_write;
 int n_evol_Q=1, uconverge=1, qconverge=1;
 int bulk0=0, qlength;
 int type_bot, type_top;
-double dt=1.0, qdt, tau_f, itau_f, kappa, xi, xi1, xi2, Gamma_rot, rho, U_lc, S_lc, A_ldg, Temp=third, e[15][3];
+double dt=1.0, qdt, tau_f, itau_f, kappa, xi, xi1, xi2, Gamma_rot, rho, U_lc, S_lc, A_ldg, Temp=third, e[15][3], q_init;
 double ux_top, ux_bot, uy_top, uy_bot, xforce, yforce;
 double qthreshold=1e-15, uthreshold, k_eng=-1, Q_diff=100, e_toto=0., e_tot, e_ld, e_el, e_sf, Fld0;
 double W_top, W_bot, n_top[3], n_bot[3];
