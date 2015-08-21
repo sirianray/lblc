@@ -401,6 +401,11 @@ void cal_stress()
 					dxQ[ii] = four3rd*Qsurf[ip2+1+ii]-*(p+ii)-third*Q[ip1+ii];
 					d2xQ[ii]= eight3rd*Qsurf[ip2+1+ii]-4.0*(*(p+ii))+four3rd*Q[ip1+ii];
 				}
+                        } else if (ip1%5!=0 && ip2%5!=0) {
+                                for (ii=0; ii<5; ii++) {
+                                        dxQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
+                                        d2xQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
+                                }
 			} else {
 				printf("surface too close\n");
 				exit(-1);
@@ -423,6 +428,11 @@ void cal_stress()
 					dyQ[ii] = four3rd*Qsurf[ip2+1+ii]-*(p+ii)-third*Q[ip1+ii];
 					d2yQ[ii]= eight3rd*Qsurf[ip2+1+ii]-4.0*(*(p+ii))+four3rd*Q[ip1+ii];
 				}
+                        } else if (ip1%5!=0 && ip2%5!=0) {
+                                for (ii=0; ii<5; ii++) {
+                                        dyQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
+                                        d2yQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
+                                }
 			} else {
 				printf("surface too close\n");
 				exit(-1);
@@ -445,6 +455,11 @@ void cal_stress()
 					dzQ[ii] =-(*(p+ii)+third*Q[ip1+ii]-four3rd*Qsurf[ip2+1+ii]);
 					d2zQ[ii]= eight3rd*(Qsurf[ip2+1+ii]-*(p+ii))+four3rd*(Q[ip1+ii]-*(p+ii));
 				}
+                        } else if (ip1%5!=0 && ip2%5!=0) {
+                                for (ii=0; ii<5; ii++) {
+                                        dzQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
+                                        d2zQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
+                                }
 			} else {
 				printf("surface too close\n");
 				exit(-1);
