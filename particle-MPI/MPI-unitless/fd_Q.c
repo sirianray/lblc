@@ -474,9 +474,9 @@ void cal_stress()
 			dQ[0][0]=2.*(dxQ[0]*dxQ[0]+dxQ[1]*dxQ[1]+dxQ[2]*dxQ[2]+dxQ[3]*dxQ[3]+dxQ[4]*dxQ[4]+dxQ[0]*dxQ[3]);
 			dQ[1][1]=2.*(dyQ[0]*dyQ[0]+dyQ[1]*dyQ[1]+dyQ[2]*dyQ[2]+dyQ[3]*dyQ[3]+dyQ[4]*dyQ[4]+dyQ[0]*dyQ[3]);
 			dQ[2][2]=2.*(dzQ[0]*dzQ[0]+dzQ[1]*dzQ[1]+dzQ[2]*dzQ[2]+dzQ[3]*dzQ[3]+dzQ[4]*dzQ[4]+dzQ[0]*dzQ[3]);
-			dQ[0][1]=2.*(dxQ[0]*dyQ[0]+dxQ[1]*dyQ[1]+dxQ[2]*dyQ[2]+dxQ[3]*dyQ[3]+dxQ[4]*dyQ[4]+dxQ[0]*dyQ[3]);
-			dQ[0][2]=2.*(dxQ[0]*dzQ[0]+dxQ[1]*dzQ[1]+dxQ[2]*dzQ[2]+dxQ[3]*dzQ[3]+dxQ[4]*dzQ[4]+dxQ[0]*dzQ[3]);
-			dQ[1][2]=2.*(dyQ[0]*dzQ[0]+dyQ[1]*dzQ[1]+dyQ[2]*dzQ[2]+dyQ[3]*dzQ[3]+dyQ[4]*dzQ[4]+dyQ[0]*dzQ[3]);
+                        dQ[0][1]=2.*(dxQ[0]*dyQ[0]+dxQ[1]*dyQ[1]+dxQ[2]*dyQ[2]+dxQ[3]*dyQ[3]+dxQ[4]*dyQ[4]) + dxQ[0]*dyQ[3] + dxQ[3]*dyQ[0];
+                        dQ[0][2]=2.*(dxQ[0]*dzQ[0]+dxQ[1]*dzQ[1]+dxQ[2]*dzQ[2]+dxQ[3]*dzQ[3]+dxQ[4]*dzQ[4]) + dxQ[0]*dzQ[3] + dxQ[3]*dzQ[0];
+                        dQ[1][2]=2.*(dyQ[0]*dzQ[0]+dyQ[1]*dzQ[1]+dyQ[2]*dzQ[2]+dyQ[3]*dzQ[3]+dyQ[4]*dzQ[4]) + dyQ[0]*dzQ[3] + dyQ[3]*dzQ[0];
 			dQ[1][0]=dQ[0][1];
 			dQ[2][0]=dQ[0][2];
 			dQ[2][1]=dQ[1][2];

@@ -474,9 +474,9 @@ void cal_stress()
 			dQ[0][0]=2.*(dxQ[0]*dxQ[0]+dxQ[1]*dxQ[1]+dxQ[2]*dxQ[2]+dxQ[3]*dxQ[3]+dxQ[4]*dxQ[4]+dxQ[0]*dxQ[3]);
 			dQ[1][1]=2.*(dyQ[0]*dyQ[0]+dyQ[1]*dyQ[1]+dyQ[2]*dyQ[2]+dyQ[3]*dyQ[3]+dyQ[4]*dyQ[4]+dyQ[0]*dyQ[3]);
 			dQ[2][2]=2.*(dzQ[0]*dzQ[0]+dzQ[1]*dzQ[1]+dzQ[2]*dzQ[2]+dzQ[3]*dzQ[3]+dzQ[4]*dzQ[4]+dzQ[0]*dzQ[3]);
-			dQ[0][1]=2.*(dxQ[0]*dyQ[0]+dxQ[1]*dyQ[1]+dxQ[2]*dyQ[2]+dxQ[3]*dyQ[3]+dxQ[4]*dyQ[4]+dxQ[0]*dyQ[3]);
-			dQ[0][2]=2.*(dxQ[0]*dzQ[0]+dxQ[1]*dzQ[1]+dxQ[2]*dzQ[2]+dxQ[3]*dzQ[3]+dxQ[4]*dzQ[4]+dxQ[0]*dzQ[3]);
-			dQ[1][2]=2.*(dyQ[0]*dzQ[0]+dyQ[1]*dzQ[1]+dyQ[2]*dzQ[2]+dyQ[3]*dzQ[3]+dyQ[4]*dzQ[4]+dyQ[0]*dzQ[3]);
+                        dQ[0][1]=2.*(dxQ[0]*dyQ[0]+dxQ[1]*dyQ[1]+dxQ[2]*dyQ[2]+dxQ[3]*dyQ[3]+dxQ[4]*dyQ[4]) + dxQ[0]*dyQ[3] + dxQ[3]*dyQ[0];
+                        dQ[0][2]=2.*(dxQ[0]*dzQ[0]+dxQ[1]*dzQ[1]+dxQ[2]*dzQ[2]+dxQ[3]*dzQ[3]+dxQ[4]*dzQ[4]) + dxQ[0]*dzQ[3] + dxQ[3]*dzQ[0];
+                        dQ[1][2]=2.*(dyQ[0]*dzQ[0]+dyQ[1]*dzQ[1]+dyQ[2]*dzQ[2]+dyQ[3]*dzQ[3]+dyQ[4]*dzQ[4]) + dyQ[0]*dzQ[3] + dyQ[3]*dzQ[0];
 			dQ[1][0]=dQ[0][1];
 			dQ[2][0]=dQ[0][2];
 			dQ[2][1]=dQ[1][2];
@@ -543,16 +543,16 @@ void cal_sigma_p()
 		ip = is  * 5;
 		
 		if (info[id0]==-1) {
-                        idxp = nextf[ip+2]>=0?(int)(nextf[ip+2]/15)*9:(int)(nextf[ip+2]/15-1)*9;
-                        idxm = nextf[ip+1]>=0?(int)(nextf[ip+1]/15)*9:(int)(nextf[ip+1]/15-1)*9;
-                        idyp = nextf[ip+4]>=0?(int)(nextf[ip+4]/15)*9:(int)(nextf[ip+4]/15-1)*9;
-                        idym = nextf[ip+3]>=0?(int)(nextf[ip+3]/15)*9:(int)(nextf[ip+3]/15-1)*9;
-                        idzp = nextf[ip+6]>=0?(int)(nextf[ip+6]/15)*9:(int)(nextf[ip+6]/15-1)*9;
-                        idzm = nextf[ip+5]>=0?(int)(nextf[ip+5]/15)*9:(int)(nextf[ip+5]/15-1)*9;
+			idxp = nextf[ip+2]>=0?(int)(nextf[ip+2]/15)*9:(int)(nextf[ip+2]/15-1)*9;
+			idxm = nextf[ip+1]>=0?(int)(nextf[ip+1]/15)*9:(int)(nextf[ip+1]/15-1)*9;
+			idyp = nextf[ip+4]>=0?(int)(nextf[ip+4]/15)*9:(int)(nextf[ip+4]/15-1)*9;
+			idym = nextf[ip+3]>=0?(int)(nextf[ip+3]/15)*9:(int)(nextf[ip+3]/15-1)*9;
+			idzp = nextf[ip+6]>=0?(int)(nextf[ip+6]/15)*9:(int)(nextf[ip+6]/15-1)*9;
+			idzm = nextf[ip+5]>=0?(int)(nextf[ip+5]/15)*9:(int)(nextf[ip+5]/15-1)*9;
 			idzpp= nextf[nextf[ip+6]];
-                        idzpp= idzpp>=0?(int)(idzpp/15)*9:(int)(idzpp/15-1)*9;
+			idzpp= idzpp>=0?(int)(idzpp/15)*9:(int)(idzpp/15-1)*9;
 			idzmm= nextf[nextf[ip+5]];
-                        idzmm= idzmm>=0?(int)(idzmm/15)*9:(int)(idzmm/15-1)*9;
+			idzmm= idzmm>=0?(int)(idzmm/15)*9:(int)(idzmm/15-1)*9;
 			
 			if (npar==0 || idxm!=id && idxp!=id) {
 				sigma_p[is]  += 0.5 * (sigma_q[idxp]  - sigma_q[idxm]);
