@@ -27,7 +27,7 @@ double getF0(double U)
 
         trqq = trQQ(p);
         qqq = QQQ(p);
-        eld = 0.5 * (1.0-third*U)*trqq - third*U*qqq + 0.25*U*trqq*trqq;
+        eld = A_ldg * ( 0.5 * (1.0-third*U)*trqq - third*U*qqq + 0.25*U*trqq*trqq );
 
         return eld;
 }

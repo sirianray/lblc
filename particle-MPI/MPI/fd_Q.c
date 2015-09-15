@@ -264,7 +264,7 @@ void cal_dQ()
 			
 			if (flag==1) {
 				qqq = QQQ(p);
-				eld = 0.5 * (1.0-third*U_lc)*trqq - third*U_lc*qqq + 0.25*U_lc*trqq*trqq;
+				eld = A_ldg * ( 0.5 * (1.0-third*U_lc)*trqq - third*U_lc*qqq + 0.25*U_lc*trqq*trqq );
 				eel = dxQ[0]*dxQ[0] + dyQ[0]*dyQ[0] + dzQ[0]*dzQ[0];				
 				for (ii=1; ii<5; ii++) {
 					eel += dxQ[ii]*dxQ[ii] + dyQ[ii]*dyQ[ii] + dzQ[ii]*dzQ[ii];
@@ -511,7 +511,7 @@ void cal_stress()
 
                         trqq = trQQ(p);
                         qqq = QQQ(p);
-                        eld = 0.5 * (1.0-third*U_lc)*trqq - third*U_lc*qqq + 0.25*U_lc*trqq*trqq - Fld0;
+                        eld = A_ldg * ( 0.5 * (1.0-third*U_lc)*trqq - third*U_lc*qqq + 0.25*U_lc*trqq*trqq ) - Fld0;
 			
 			for(ii=0;ii<3;ii++){
 				for(jj=0;jj<3;jj++){
