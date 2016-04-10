@@ -6,12 +6,13 @@
 
 int main(){
 
-	FILE *grid, *file, *ufile, *rfile, *Qfile, *sfile, *ifile;
+	FILE *grid, *file, *ufile, *rfile, *Qfile, *sfile, *ifile, *efile, *sbfile;
 	float *g1, *g2, *g3, *v1, *v2, *v3;
 	float a[9], w[3], u[3], S, density;
 	int *gi;
 	int Nx, Ny, Nz, points, lines=0, i, m, info, junk;
 	char ch, mfile[256];
+	float *elastic, *sb;
 
         grid = fopen("grid.out", "r");
         fscanf(grid,"Nx Ny Nz %d %d %d\n",&Nx,&Ny,&Nz);
@@ -50,7 +51,19 @@ int main(){
 	Qfile=fopen("Q_3d.out","r");
 	sfile=fopen("stress_3d.out","r");
 	ifile=fopen("type_3d.out","r");
-	
+	efile=fopen("elastic_3d.out","r");
+	sbfile=fopen("sb_3d.out","r");
+
+	if(efile!=NULL) {
+		elastic=malloc(3*points*sizeof(float));
+		printf("efile exists\n");
+	}
+
+	if(sbfile!=NULL) {
+		sb=malloc(points*sizeof(float));
+		printf("calculating bend-splay order parameter\n");
+	}
+
 	for(m=0;m<lines;m++){
 		sprintf(mfile,"movie_%05d.vtk",m);
                 file = fopen(mfile,"w");
@@ -137,6 +150,48 @@ int main(){
                         }
 		}
 
+		if(efile!=NULL){
+			for(i=0; i<points; i++){
+				fscanf(efile,"%f %f %f\n",&elastic[3*i],&elastic[3*i+1],&elastic[3*i+2]);
+			}
+                        fprintf(file,"\n");
+                        fprintf(file,"SCALARS splay float\n");
+                        fprintf(file,"LOOKUP_TABLE default\n");
+                        for(i=0;i<points;i++){
+                                fprintf(file,"\t%e\n",elastic[3*i]);
+                        }
+                        fprintf(file,"\n");
+                        fprintf(file,"SCALARS twist float\n");
+                        fprintf(file,"LOOKUP_TABLE default\n");
+                        for(i=0;i<points;i++){
+                                fprintf(file,"\t%e\n",elastic[3*i+1]);
+                        }
+                        fprintf(file,"\n");
+                        fprintf(file,"SCALARS bend float\n");
+                        fprintf(file,"LOOKUP_TABLE default\n");
+                        for(i=0;i<points;i++){
+                                fprintf(file,"\t%e\n",elastic[3*i+2]);
+                        }
+                        fprintf(file,"\n");
+                        fprintf(file,"SCALARS elastic float\n");
+                        fprintf(file,"LOOKUP_TABLE default\n");
+                        for(i=0;i<points;i++){
+                                fprintf(file,"\t%e\n",elastic[3*i]+elastic[3*i+1]+elastic[3*i+2]);
+                        }
+		}
+
+		if(sbfile!=NULL) {
+			for(i=0; i<points; i++){
+				fscanf(sbfile,"%f\n",&sb[i]);
+			}
+                        fprintf(file,"\n");
+                        fprintf(file,"SCALARS S_sb float\n");
+                        fprintf(file,"LOOKUP_TABLE default\n");
+                        for(i=0;i<points;i++){
+                                fprintf(file,"\t%e\n",sb[i]);
+                        }
+		}
+
 		printf("printed file %d\n",m);
                 fclose(file);
 	}
@@ -146,6 +201,8 @@ int main(){
 	fclose(Qfile);
 	if(sfile!=NULL)fclose(sfile);
 	if(ifile!=NULL)fclose(ifile);
+	if(efile!=NULL)fclose(efile);
+	if(sbfile!=NULL)fclose(sbfile);
 
 	free(g1);
         free(g2);
@@ -154,6 +211,8 @@ int main(){
         free(v2);
         free(v3);
 	free(gi);
+	if(efile!=NULL)free(elastic);
+	if(sbfile!=NULL)free(sb);
 
 	printf("done!\n");
    
