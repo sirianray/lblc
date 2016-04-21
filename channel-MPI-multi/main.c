@@ -23,6 +23,7 @@ double q_ch, twqL_ch;
 double ux_lo, uy_lo, uz_lo, ux_hi, uy_hi, uz_hi, xforce, yforce, zforce;
 double Q_tol=5e-28, u_tol=2e-15, k_eng=-1, Q_diff=100, e_toto=0., e_tot, e_ld, e_el, e_ch, e_sf, Fld0, e_L1, e_L2, e_L3, e_L4;
 double W_xlo, W_xhi, W_ylo, W_yhi, W_top, W_bot, n_xlo[3], n_xhi[3], n_ylo[3], n_yhi[3], n_top[3], n_bot[3];
+double K1, K2, K3, K4, K24;
 
 int *neighb, *nextf, *info, *neighbsurf;
 real *Q, *H, *surf, *Qsurf, *Hsurf;

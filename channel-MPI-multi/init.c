@@ -18,9 +18,9 @@ void init()
 			sita0 = sita0/sqrt(n_bot[0]*n_bot[0]+n_bot[1]*n_bot[1]+n_bot[2]*n_bot[2]);
 			sita0 = acos(sita0);
 			
-			if (rand_init==0) {			// random random seed
+			if (rand_init==0) {			                                        // random random seed
 				srand((unsigned)time(&t));
-			} else if (rand_init==1) {		// random seed from input
+			} else if (rand_init==1) {		                                    // random seed from input
 				srand((unsigned)rand_seed);
 			}
 			
@@ -45,28 +45,28 @@ void init()
 				for (j=0; j<Ny; j++) {
 					for (i=0; i<Nx; i++) {
 						id = (i + (j+k*Ny)*Nx);
-						if (rand_init==0 || rand_init==1) {
+						if (rand_init==0 || rand_init==1) {                     // 0: random random seed, 1: random with rand_seed
 							nx = randvec();
 							ny = randvec();
 							nz = randvec();
 						}
-						else if (rand_init==-2 && npar>0) {
-                                                        nx = n_bot[0];
-                                                        ny = n_bot[1];
-                                                        nz = n_bot[2];
-                                                        for (ipar=0; ipar<npar; ipar++) {
-                                                                dx = (double)i-p_pos[ipar*3+0];
-                                                                dy = (double)j-p_pos[ipar*3+1];
-                                                                dz = (double)k-p_pos[ipar*3+2];
-                                                                ir2= 1./(dx*dx+dy*dy+dz*dz);
-                                                                ir = sqrt(ir2);
-                                                                ir3= ir*ir2;
-                                                                nx += q_init*p_rad[ipar]*p_rad[ipar]*dx*ir3;
-                                                                ny += q_init*p_rad[ipar]*p_rad[ipar]*dy*ir3;
-                                                                nz += q_init*p_rad[ipar]*p_rad[ipar]*dz*ir3;
-                                                        }
-                                                }
-						else if (rand_init==-3 || rand_init==-4) {
+						else if (rand_init==-2 && npar>0) {                     // dipolar ansatz
+                            nx = n_bot[0];
+                            ny = n_bot[1];
+                            nz = n_bot[2];
+                            for (ipar=0; ipar<npar; ipar++) {
+                                    dx = (double)i-p_pos[ipar*3+0];
+                                    dy = (double)j-p_pos[ipar*3+1];
+                                    dz = (double)k-p_pos[ipar*3+2];
+                                    ir2= 1./(dx*dx+dy*dy+dz*dz);
+                                    ir = sqrt(ir2);
+                                    ir3= ir*ir2;
+                                    nx += q_init*p_rad[ipar]*p_rad[ipar]*dx*ir3;
+                                    ny += q_init*p_rad[ipar]*p_rad[ipar]*dy*ir3;
+                                    nz += q_init*p_rad[ipar]*p_rad[ipar]*dz*ir3;
+                            }
+                        }
+						else if (rand_init==-3 || rand_init==-4) {              // -3: BPI; -4: BPII
 							double A_init = q_init;
 							double cst;
 							double isq2 = 1.0 / sqrt(2);
@@ -99,17 +99,17 @@ void init()
 								q[4] = A_init * sin(cst * x);
 								q[5] = A_init * (cos(cst * y) - cos(cst * x));
 							}
-						} else if (rand_init==-5 || rand_init==-6) {
+						} else if (rand_init==-5 || rand_init==-6) {            // -5: rotated BPI; -6: rotated BPII
 							double r, r2, rxy, omg, costhe, sinthe, cosphi, sinphi;
 							nx = 0;
 							ny = 0;
 							nz = 0;
 							for (ipar=0; ipar<npar; ipar++) {
-                                                                dx = (double)i-p_pos[ipar*3+0];
-                                                                dy = (double)j-p_pos[ipar*3+1];
-                                                                dz = (double)k-p_pos[ipar*3+2];
-                                                                r2 = dx*dx+dy*dy+dz*dz;
-                                                                r  = sqrt(r2);
+                                dx = (double)i-p_pos[ipar*3+0];
+                                dy = (double)j-p_pos[ipar*3+1];
+                                dz = (double)k-p_pos[ipar*3+2];
+                                r2 = dx*dx+dy*dy+dz*dz;
+                                r  = sqrt(r2);
 								ir = 1.0/r;
 								omg= r*q_ch;
 								if (rand_init==-6) omg += atan2(dy,dx);
@@ -126,7 +126,7 @@ void init()
 									nz    +=-cos(omg)*sinthe;
 								}
 							}
-						} else if ( (rand_init==-7 || rand_init==-8) && npar>0) {
+						} else if ( (rand_init==-7 || rand_init==-8) && npar>0) {   // escaped-radial or planar-radial, for cylindrical symmetry
 							double cx, cy, cz, th, dr;
 							cx = hLx - 0.5;
 							cy = hLy - 0.5;
@@ -188,7 +188,7 @@ void init()
 								ny = 0;
 								nz = 0;
 							}
-						} else if (rand_init==-9) {
+						} else if (rand_init==-9) {                             // radial for spherical symmetry
 							double cx, cy, cz, th, dr, idr;
 							cx = p_pos[0]; 
 							cy = p_pos[1];
@@ -207,7 +207,114 @@ void init()
 								ny  = 0;
 								nz  = 0;
 							}
-						}
+						} else if (rand_init==-10) {                            // twist-planar for planar cylindrical system
+                            double cx, cy, cz, dr, idr, beta0, beta;
+							cx = hLx - 0.5;
+							cy = hLy - 0.5;
+							cz = hLz ;
+							dx = (double)i - cx;
+							dy = (double)j - cy;
+							dz = (double)k - cz;
+                            if (K24>=2.*K2 && K2>0 && K3>0) {
+                                beta0 = sqrt(K24*(K24-2.*K2)/(K2*K3));
+                                beta0 = atan(beta0);
+                            } else {
+                                beta0 = 0;
+                            }
+                            if (p_pos[0]!=0) {
+                                dr  = sqrt(dy*dy+dz*dz);
+                                if (dr>1e-3) {
+                                    idr = 1./dr;
+                                    beta= beta0*dr/p_rad[0];
+                                    nx  = cos(beta);
+                                    ny  =-sin(beta)*dz*idr;
+                                    nz  = sin(beta)*dy*idr;
+                                } else {
+                                    nx  = 1.;
+                                    ny  = 0.;
+                                    nz  = 0.;
+                                }
+                            } else if (p_pos[1]!=0) {
+                                dr  = sqrt(dx*dx+dz*dz);
+                                if (dr>1e-3) {
+                                    idr = 1./dr;
+                                    beta= beta0*dr/p_rad[0];
+                                    nx  = sin(beta)*dz*idr;
+                                    ny  = cos(beta);
+                                    nz  =-sin(beta)*dx*idr;
+                                } else {
+                                    nx  = 0;
+                                    ny  = 1.;
+                                    nz  = 0.;
+                                }
+                            } else if (p_pos[2]!=0) {
+                                dr  = sqrt(dx*dx+dy*dy);
+                                if (dr>1e-3) {
+                                    idr = 1./dr;
+                                    beta= beta0*dr/p_rad[0];
+                                    nx  =-sin(beta)*dy*idr;
+                                    ny  = sin(beta)*dx*idr;
+                                    nz  = cos(beta);
+                                } else {
+                                    nx  = 0.;
+                                    ny  = 0.;
+                                    nz  = 1.;
+                                }
+                            } else {
+								nx = 0;
+								ny = 0;
+								nz = 0;
+                            }
+						} else if (rand_init==-11) {                            // concentric for cylindrical symmetry
+							double cx, cy, cz, th, dr, idr;
+							cx = hLx - 0.5;
+							cy = hLy - 0.5;
+							cz = hLz ;
+							dx = (double)i - cx;
+							dy = (double)j - cy;
+							dz = (double)k - cz;
+                            if (p_pos[0]>0) {
+                                dr = sqrt(dy*dy+dz*dz);
+                                if (dr>1e-3) {
+                                    idr = 1./dr;
+                                    nx  = 0;
+                                    ny  =-dz*idr;
+                                    nz  = dy*idr;
+                                } else {
+                                    nx  = 0;
+                                    ny  = 0;
+                                    nz  = 0;
+                                }
+                            } else if (p_pos[1]>0) {
+                                dr = sqrt(dx*dx+dz*dz);
+                                if (dr>1e-3) {
+                                    idr = 1./dr;
+                                    nx  = dz*idr;
+                                    ny  = 0;
+                                    nz  =-dx*idr;
+                                } else {
+                                    nx  = 0;
+                                    ny  = 0;
+                                    nz  = 0;
+                                }
+                            } else if (p_pos[2]>0) {
+                                dr = sqrt(dx*dx+dy*dy);
+                                if (dr>1e-3) {
+                                    idr = 1./dr;
+                                    nx  =-dy*idr;
+                                    ny  = dx*idr;
+                                    nz  = 0;
+                                } else {
+                                    nx  = 0;
+                                    ny  = 0;
+                                    nz  = 0;
+                                }
+                            } else {
+                                nx  = 0;
+                                ny  = 0;
+                                nz  = 0;
+                            }
+                        }
 
 						if (rand_init!=-3 && rand_init!=-4) ntoq(nx, ny, nz, &q[0], &q[1], &q[2], &q[3], &q[4], &q[5]);
 						for (ii=0; ii<5; ii++) Q[id*5+ii] = q[ii];

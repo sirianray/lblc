@@ -55,7 +55,7 @@ int main(){
 	sbfile=fopen("sb_3d.out","r");
 
 	if(efile!=NULL) {
-		elastic=malloc(3*points*sizeof(float));
+		elastic=malloc(4*points*sizeof(float));
 		printf("efile exists\n");
 	}
 
@@ -152,31 +152,37 @@ int main(){
 
 		if(efile!=NULL){
 			for(i=0; i<points; i++){
-				fscanf(efile,"%f %f %f\n",&elastic[3*i],&elastic[3*i+1],&elastic[3*i+2]);
+				fscanf(efile,"%f %f %f %f\n",&elastic[4*i],&elastic[4*i+1],&elastic[4*i+2],&elastic[4*i+3]);
 			}
                         fprintf(file,"\n");
                         fprintf(file,"SCALARS splay float\n");
                         fprintf(file,"LOOKUP_TABLE default\n");
                         for(i=0;i<points;i++){
-                                fprintf(file,"\t%e\n",elastic[3*i]);
+                                fprintf(file,"\t%e\n",elastic[4*i]);
                         }
                         fprintf(file,"\n");
                         fprintf(file,"SCALARS twist float\n");
                         fprintf(file,"LOOKUP_TABLE default\n");
                         for(i=0;i<points;i++){
-                                fprintf(file,"\t%e\n",elastic[3*i+1]);
+                                fprintf(file,"\t%e\n",elastic[4*i+1]);
                         }
                         fprintf(file,"\n");
                         fprintf(file,"SCALARS bend float\n");
                         fprintf(file,"LOOKUP_TABLE default\n");
                         for(i=0;i<points;i++){
-                                fprintf(file,"\t%e\n",elastic[3*i+2]);
+                                fprintf(file,"\t%e\n",elastic[4*i+2]);
+                        }
+                        fprintf(file,"\n");
+                        fprintf(file,"SCALARS saddle_splay float\n");
+                        fprintf(file,"LOOKUP_TABLE default\n");
+                        for(i=0;i<points;i++){
+                                fprintf(file,"\t%e\n",elastic[4*i+3]);
                         }
                         fprintf(file,"\n");
                         fprintf(file,"SCALARS elastic float\n");
                         fprintf(file,"LOOKUP_TABLE default\n");
                         for(i=0;i<points;i++){
-                                fprintf(file,"\t%e\n",elastic[3*i]+elastic[3*i+1]+elastic[3*i+2]);
+                                fprintf(file,"\t%e\n",elastic[4*i]+elastic[4*i+1]+elastic[4*i+2]+elastic[4*i+3]);
                         }
 		}
 

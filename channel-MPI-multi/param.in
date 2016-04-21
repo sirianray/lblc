@@ -1,5 +1,6 @@
 # This is the parameter input file
 # rand_init: -1 - uniform; 0 - random with random seed; 1 - random with rand_seed; -2 - dipolar ansatz; -3 - BPI ansatz; -4 - BPII ansatz
+#            -7 - escaped radial; -8 - radial planar; -9; radial; -10: twist-planar; -11: concentric
 # anchoring "type" of surface: 0 - infinite; 1 - finite nondegenerate; 2 - finite degenerate
 #
 newrun_on 1 

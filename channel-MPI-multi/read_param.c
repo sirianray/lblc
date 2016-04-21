@@ -143,6 +143,14 @@ void read_param()
 	if (flow_on!=0) uconverge=0;
 	if (Q_on!=0)    qconverge=0;
 
+//  calculate frank elastic modulii
+    K1 = (2.*L1 + L2 - two3rd*S_lc*L3 + L4)*S_lc*S_lc;
+    K2 = (   L1      -  third*S_lc*L3     )*S_lc*S_lc*2.;
+    K3 = (2.*L1 + L2 +four3rd*S_lc*L3 + L4)*S_lc*S_lc;
+    K4 = L4*S_lc*S_lc;
+    K24= K2+K4;
+    if (myid==0) printf("Elastic constants: K1=%f, K2=%f, K3=%f, K24=%f\n",K1,K2,K3,K24);
+
 	r2 = n_top[0]*n_top[0]+n_top[1]*n_top[1]+n_top[2]*n_top[2];
 	if (r2>0 && r2!=1) {
 		ir = 1.0/sqrt(r2);
