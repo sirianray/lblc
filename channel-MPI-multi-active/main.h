@@ -88,6 +88,7 @@ extern double ux_lo, uy_lo, uz_lo, ux_hi, uy_hi, uz_hi, xforce, yforce, zforce;
 extern double Q_tol, u_tol, k_eng, Q_diff, e_toto, e_tot, e_ld, e_el, e_ch, e_sf, Fld0, e_L1, e_L2, e_L3, e_L4;
 extern double W_xlo, W_xhi, W_ylo, W_yhi, W_top, W_bot, n_xlo[3], n_xhi[3], n_ylo[3], n_yhi[3], n_top[3], n_bot[3];
 extern double K1, K2, K3, K4, K24;
+extern double zeta;         // activity
 
 extern int *neighb, *nextf, *info, *neighbsurf;
 extern real *Q, *H, *surf, *Qsurf, *Hsurf;

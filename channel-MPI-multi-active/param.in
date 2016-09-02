@@ -2,8 +2,7 @@
 # rand_init: -1 - uniform; 0 - random with random seed; 1 - random with rand_seed; -2 - dipolar ansatz; -3 - BPI ansatz; -4 - BPII ansatz
 #            -5 - rotated BPI; -6 - rotated BPII
 #            -7 - escaped radial; -8 - radial planar; -9; radial; -10: twist-planar; -11: concentric: -12: escape radial with defects
-#            -13: defect annihiliation for channel; -14: defect annihilation for cylinder
-#            -31 & -32: defect annihilation for bulk
+#            -13: defect annhiliation for channel
 # anchoring "type" of surface: 0 - infinite; 1 - finite nondegenerate; 2 - finite degenerate
 #
 newrun_on 1 
@@ -32,6 +31,7 @@ A_ldg 1.0
 q_ch 0.0
 U 3.5
 xi 0.8
+zeta 0
 Gamma_rot 0.133775
 debug_on 1 
 Q_tol u_tol 1e-20 1e-15

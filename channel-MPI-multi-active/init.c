@@ -411,40 +411,36 @@ void init()
                                     nz = 0;
                                 }
                             }
-                       } else if (rand_init==-31) {        // defect annihilation, defect line perpendicular to far-field director
-                           double cx, cy, b, th;
-                           cx = (double)Nx*0.5;
-                           cy = (double)Ny*0.5;
-                           b  = q_init;
-                           if (b>0.5*cy) b = 0.5*cy;
-                           if (i>cx-0.5*q_init && i<cx+0.5*q_init && j>cy-b && j<=cy) {
-                                th = (cy-(double)j)/b;
+                        } else if (rand_init==-31) {        // defect annihilation, defect line perpendicular to far-field director
+                                double a, b, th;
+                                a = (double)Ny*0.5;
+                                b = (double)Ny*0.15;
+                            if (i>Nx/4 && i<(Nx*3)/4 && j>a-b && j<=a) {
+                                th = (a-(double)j)/b;
                                 nx = cos(th);
                                 ny =-sin(th);
                                 nz = 0;
-                           } else if (i>cx-0.5*q_init && i<cx+0.5*q_init && j>cy && j<cy+b) {
-                                th = ((double)j-cy)/b;
+                            } else if (i>Nx/4 && i<(Nx*3)/4 && j>a && j<a+b){
+                                th = ((double)j-a)/b;
                                 nx = cos(th);
                                 ny = sin(th);
                                 nz = 0;
-                           } else {
+                            } else {
                                 nx = 0.;
                                 ny = 1.;
                                 nz = 0.;
-                           }
+                            }
                         } else if (rand_init==-32) {        // defect annihilation, defect line parallel to far-field director
-                            double cx, cy, b, th;
-                            cx = (double)Nx*0.5;
-                            cy = (double)Ny*0.5;
-                            b  = q_init;
-                            if (b>0.5*cy) b = 0.5*cy;
-                            if (i>cx-0.5*q_init && i<cx+0.5*q_init && j>cy-b && j<=cy) {
-                                th = (cy-(double)j)/b;
+                                double a, b, th;
+                                a = (double)Ny*0.5;
+                                b = (double)Ny*0.15;
+                            if (i>Nx/4 && i<(Nx*3)/4 && j>a-b && j<=a) {
+                                th = (a-(double)j)/b;
                                 nx = sin(th);
                                 ny = cos(th);
                                 nz = 0;
-                            } else if (i>cx-0.5*q_init && i<cx+0.5*q_init && j>cy && j<cy+b) {
-                                th = ((double)j-cy)/b;
+                            } else if (i>Nx/4 && i<(Nx*3)/4 && j>a && j<a+b){
+                                th = ((double)j-a)/b;
                                 nx =-sin(th);
                                 ny = cos(th);
                                 nz = 0;

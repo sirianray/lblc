@@ -1053,7 +1053,7 @@ void cal_stress2()
 	int i, j, k, iim, iip, jjm, jjp, kkm, kkp, id1, id2, id3, id4;
 	
     int jj, mm;
-    double temp, sum, h[3][3], M[3][3];
+    double temp, sum, h[3][3], M[3][3], Qmat[3][3];
 
 	for (iq=0, ib=0, id=0; id<lpoint; iq+=5, ib+=6, id++){
 		if (info[id]==-1) {
@@ -1731,6 +1731,16 @@ void cal_stress2()
 					H[iq+4]+=-L3*( 0.5* dQ[1][2]              - QdQ[4] - Qc2[4] );
 				}
 			}
+			Qmat[0][0] = Q[iq];
+            Qmat[0][1] = Q[iq+1];
+            Qmat[0][2] = Q[iq+2];
+            Qmat[1][1] = Q[iq+3];
+            Qmat[1][2] = Q[iq+4];
+			Qmat[1][0] = Qmat[0][1];
+            Qmat[2][0] = Qmat[0][2];
+            Qmat[2][1] = Qmat[1][2];			
+			Qmat[2][2] =-Qmat[0][0]-Qmat[1][1];
+
 			M[0][0] = Q[iq]+third;
 			M[0][1] = Q[iq+1];
 			M[1][0] = M[0][1];
@@ -1765,7 +1775,7 @@ void cal_stress2()
 						temp += (1.0-xi)*M[ii][mm]*h[mm][jj]-(xi+1.0)*h[ii][mm]*M[mm][jj];
 					}
 					
-					sigma_q[id*9+ii*3+jj] = temp;
+					sigma_q[id*9+ii*3+jj] = temp - zeta * Qmat[ii][jj];
 				}
 			}
 		}

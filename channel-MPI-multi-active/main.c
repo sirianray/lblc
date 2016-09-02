@@ -24,6 +24,7 @@ double ux_lo, uy_lo, uz_lo, ux_hi, uy_hi, uz_hi, xforce, yforce, zforce;
 double Q_tol=5e-28, u_tol=2e-15, k_eng=-1, Q_diff=100, e_toto=0., e_tot, e_ld, e_el, e_ch, e_sf, Fld0, e_L1, e_L2, e_L3, e_L4;
 double W_xlo, W_xhi, W_ylo, W_yhi, W_top, W_bot, n_xlo[3], n_xhi[3], n_ylo[3], n_yhi[3], n_top[3], n_bot[3];
 double K1, K2, K3, K4, K24;
+double zeta;
 
 int *neighb, *nextf, *info, *neighbsurf;
 real *Q, *H, *surf, *Qsurf, *Hsurf;
@@ -40,7 +41,7 @@ int main(int argc, char *argv[]){
         MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
         MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
-	double t_begin;
+	double t_begin, zeta0;
 	int i, j, k, ii, id, id1;
 
 	t_begin = MPI_Wtime();		// record the begining CPU time
@@ -63,12 +64,15 @@ int main(int argc, char *argv[]){
 	p_init();
 	p_iden();
 	init();
+    
+    zeta0 = zeta;
+    zeta  = 0;
 
 	if (flow_on!=0) cal_fequ(f);	
 	if (Q_on!=0) cal_dQ();
 
 	if (Q_on!=0 && flow_on!=0 && newrun_on!=0) {
-		while(qconverge==0 && (t_current<5000 || npar>0 && t_current<20000 )) {
+		while(qconverge==0 && (t_current<200 || npar>0 && t_current<20000 )) {
 			t_current++;
 			for (ii=0; ii<n_evol_Q; ii++) {
                                 cal_dQ();
@@ -94,6 +98,8 @@ int main(int argc, char *argv[]){
 	output3(1);
 	if(myid==0) printf("Q initialized\n");
 	MPI_Barrier(MPI_COMM_WORLD);
+
+    zeta = zeta0;
 
 	if (t_current%t_print==0) monitor();
 	while (t_current<t_max && uconverge*qconverge==0) {

@@ -3,5 +3,6 @@ coarse:     similar to particle, but every 'n' points be displayed
 elast:      output elastic energies to file "elast" for order parameter > 'q'
 elast2:     similar to elast, omit points within distance 'r' to defect, the number of which is 'n'
 *elast3:    similar to elast, weight points with order parameter; can automatically read U 
+*active:    temparay folder, based on elast, count defect volume
 
 * not commited
