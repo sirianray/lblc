@@ -1,0 +1,12 @@
+based on channel-MPI-multi3-uros, now wall surface has different intensity absorption
+
+on Mar/9/2017:
+A_ldg has been replaced by a_ldg*(T0-Tn+T_on*T)
+
+where a_ldg(>0) is material constant ()
+T0 is the reference temperature (The room temperature, for instance)
+Tn is the Nematic-Isotropic transition temperature
+T_on controls whether temperature field enters the Q field calculation
+T  is the temperature field (0 is the reference)
+
+* T0-Tn is given as delT(<0) in the simulation.

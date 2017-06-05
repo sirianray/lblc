@@ -1,0 +1,14 @@
+same as the svn commited folder channel-MPI-multi
+
+
+We calculate stress for multi-elastic-constant system
+
+
+based on channel-MPI-multi3, add active term
+
+
+based on channel-MPI-multi3-active, change initial config -31 & -32 to be consistent with those in channel-MPI-multi3-backflow
+
+
+based on channel-MPI_multi3-active3
+
