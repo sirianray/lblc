@@ -1781,6 +1781,7 @@ void cal_stress2()
 		}
 	}
 
+	MPI_Win_fence(0, wins);
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 

@@ -171,10 +171,10 @@ void cal_W()
 			W[iw+8]= 0.5 * (u[idzp+2]- u[idzm+2]);
 		} else if (wall_z!=0 && (id+myid*point*3)/bulk3==0) {
 			W[iw+6]=  u[id]   + third*u[idzp]   - four3rd * ux_lo;
-			W[iw+7]=  u[id+1] + third*u[idzp+1] - four3rd * uy_hi;
+			W[iw+7]=  u[id+1] + third*u[idzp+1] - four3rd * uy_lo;
 			W[iw+8]=  u[id+2] + third*u[idzp+2];
 		} else if (wall_z!=0 && (id+myid*point*3)/bulk3==Nz-1) {
-			W[iw+6]= -u[id]   - third*u[idzm]   + four3rd * ux_lo;
+			W[iw+6]= -u[id]   - third*u[idzm]   + four3rd * ux_hi;
 			W[iw+7]= -u[id+1] - third*u[idzm+1] + four3rd * uy_hi;
 			W[iw+8]= -u[id+2] - third*u[idzm+2];
 		} else if (npar>0 && idzp==id) {
