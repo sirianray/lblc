@@ -171,10 +171,10 @@ void cal_W()
 			W[iw+8]= 0.5 * (u[idzp+2]- u[idzm+2]);
 		} else if (wall_z!=0 && (id+myid*point*3)/bulk3==0) {
 			W[iw+6]=  u[id]   + third*u[idzp]   - four3rd * ux_lo;
-			W[iw+7]=  u[id+1] + third*u[idzp+1] - four3rd * uy_hi;
+			W[iw+7]=  u[id+1] + third*u[idzp+1] - four3rd * uy_lo;
 			W[iw+8]=  u[id+2] + third*u[idzp+2];
 		} else if (wall_z!=0 && (id+myid*point*3)/bulk3==Nz-1) {
-			W[iw+6]= -u[id]   - third*u[idzm]   + four3rd * ux_lo;
+			W[iw+6]= -u[id]   - third*u[idzm]   + four3rd * ux_hi;
 			W[iw+7]= -u[id+1] - third*u[idzm+1] + four3rd * uy_hi;
 			W[iw+8]= -u[id+2] - third*u[idzm+2];
 		} else if (npar>0 && idzp==id) {
@@ -478,7 +478,7 @@ void cal_p()
 //                        p[i*15+ii] = ( (e[ii][1] - u[i*3+1]) + 3.0 * edotu * e[ii][1] )*yforce;
 			p[i*15+ii] = (e[ii][0] - u[i*3])*xforce + (e[ii][1] - u[i*3+1])*yforce + (e[ii][2] - u[i*3+2])*zforce + 3.0 * edotu * (e[ii][0]*xforce + e[ii][1]*yforce + e[ii][2]*zforce);
 
-                        if (Q_on!=0) {
+                        if (Q_on!=0 || phi_on!=0) {
                                 p[i*15+ii]+= ( (e[ii][0]-u[i*3])*sigma_p[i*3] + (e[ii][1]-u[i*3+1])*(sigma_p[i*3+1]) +  (e[ii][2]-u[i*3+2])*sigma_p[i*3+2] );
                                 p[i*15+ii]+= 3.0 * edotu *(e[ii][0]*sigma_p[i*3] + e[ii][1]*sigma_p[i*3+1] + e[ii][2]*sigma_p[i*3+2]);
                         }

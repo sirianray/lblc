@@ -18,6 +18,7 @@ void p_allocate();
 void p_deallocate();
 void p_init();
 void p_iden();
+void p_set_neighb();
 void p_update();
 int onsurface_sphere(double x, double y, double z, int ipar, double *nx, double *ny, double *nz);
 int onsurface_cylinder(double x, double y, double z, int ipar, double *nx, double *ny, double *nz);

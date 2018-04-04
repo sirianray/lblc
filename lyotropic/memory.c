@@ -10,7 +10,7 @@
 
 void allocate()
 {
-        if (myid==root) printf("Allocating..\n");
+    if (myid==root) printf("Allocating..\n");
 
 	MPI_Win_allocate_shared(5*point*sizeof(real),1,MPI_INFO_NULL, shmcomm, &Q,   &winq);
 	MPI_Win_allocate_shared(  point*sizeof(real),1,MPI_INFO_NULL, shmcomm, &Rho, &winr);
@@ -30,9 +30,12 @@ void allocate()
 	if (flow_on!=0 && Q_on!=0) {
 		MPI_Win_allocate_shared( 9*point*sizeof(real),1,MPI_INFO_NULL, shmcomm, &sigma_q, &wins);
 	}
+	if (flow_on!=0 && (Q_on!=0 || phi_on!=0)) {
+		W       = malloc( 9*point*sizeof(real));
+	}
 	if (flow_on!=0) {
 		MPI_Win_allocate_shared(15*point*sizeof(real),1,MPI_INFO_NULL, shmcomm, &f, &winf);
-                MPI_Win_allocate_shared(15*point*sizeof(real),1,MPI_INFO_NULL, shmcomm, &f2,&winf2);
+        MPI_Win_allocate_shared(15*point*sizeof(real),1,MPI_INFO_NULL, shmcomm, &f2,&winf2);
 		MPI_Win_allocate_shared(15*point*sizeof(real),1,MPI_INFO_NULL, shmcomm, &p, &winp);
 		MPI_Win_allocate_shared(15*point*sizeof(int), 1,MPI_INFO_NULL, shmcomm, &nextf, &winnf);
 	}
@@ -41,18 +44,21 @@ void allocate()
 	MPI_Win_allocate_shared(point*sizeof(int), 1,MPI_INFO_NULL, shmcomm, &info, &wininfo);
 	
 	if (Q_on!=0) {
-//		neighb  = malloc( 6*point*sizeof(int));
-		MPI_Win_allocate_shared( 6*point*sizeof(int), 1,MPI_INFO_NULL, shmcomm, &neighb, &winneighb);
 		H       = malloc( 5*point*sizeof(real));
 	}
+
+    if (Q_on!=0 || phi_on!=0) {
+//		neighb  = malloc( 6*point*sizeof(int));
+		MPI_Win_allocate_shared( 6*point*sizeof(int), 1,MPI_INFO_NULL, shmcomm, &neighb, &winneighb);
+    }
 	
 	if (flow_on!=0) {
 		Cf      = malloc(15*point*sizeof(real));
 	}
 
-	if (flow_on!=0 && Q_on!=0) {
-		sigma_p = malloc( 3*point*sizeof(real));
-		W       = malloc( 9*point*sizeof(real));
+	if (flow_on!=0 && (Q_on!=0 || phi_on!=0)) {
+//		sigma_p = malloc( 3*point*sizeof(real));
+        MPI_Win_allocate_shared(3*point*sizeof(real),1,MPI_INFO_NULL, shmcomm, &sigma_p, &winsigma_p);
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -90,17 +96,20 @@ void deallocate()
 		MPI_Win_fence(0, wins);
 		MPI_Win_free(&wins);
 	}
+	if (flow_on!=0 && (Q_on!=0 || phi_on!=0)) {
+		free(W);
+    }
 
-        if(flow_on!=0){
+    if(flow_on!=0){
 		MPI_Win_fence(0, winf);
 		MPI_Win_fence(0, winf2);
 		MPI_Win_fence(0, winp);
 		MPI_Win_fence(0, winnf);
-                MPI_Win_free(&winf);
-                MPI_Win_free(&winf2);
-                MPI_Win_free(&winp);
+        MPI_Win_free(&winf);
+        MPI_Win_free(&winf2);
+        MPI_Win_free(&winp);
 		MPI_Win_free(&winnf);
-        }
+    }
 
 //	free(info);
 	MPI_Win_fence(0, wininfo);
@@ -108,21 +117,25 @@ void deallocate()
 
 	if (Q_on!=0) {		
 		free(H);
+	}
+
+    if (Q_on!=0 || phi_on!=0) {
 //		free(neighb);
 		MPI_Win_fence(0, winneighb);
 		MPI_Win_free(&winneighb);
-	}
+    }
 	
 	if (flow_on!=0) {
 		free(Cf);
 	}
 
-	if (flow_on!=0 && Q_on!=0) {
-		free(sigma_p);
-		free(W);
+	if (flow_on!=0 && (Q_on!=0 || phi_on!=0)) {
+//		free(sigma_p);
+		MPI_Win_fence(0, winsigma_p);
+		MPI_Win_free(&winsigma_p);
 	}
 
-        MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Comm_free(&shmcomm);
-        MPI_Finalize();
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Comm_free(&shmcomm);
+    MPI_Finalize();
 }

@@ -177,7 +177,7 @@ void output2(int new, char d, int cc)
 void output1(int new, char d, int cx, int cy)
 {
 	int i, j, k, ii, xlo=0, xhi=Nx-1, ylo=0, yhi=Ny-1, zlo=0, zhi=Nz-1, id;
-	FILE *fout[9];
+	FILE *fout[14];
 
 	if (myid == root) {
 		if(new==1){
@@ -194,6 +194,15 @@ void output1(int new, char d, int cx, int cy)
 				fout[7]=fopen("uz.out","w");
 				fout[8]=fopen("rho.out","w");
 			}
+            if (phi_on!=0) {
+                fout[9] = fopen("phi.out","w");
+                fout[10]= fopen("mu.out","w");
+            }
+	        if (flow_on!=0 && (Q_on!=0 || phi_on!=0)) {
+                fout[11]= fopen("spx.out","w");
+                fout[12]= fopen("spy.out","w");
+                fout[13]= fopen("spz.out","w");
+            }
 		} else {
 			if (Q_on!=0) {
 				fout[0]=fopen("q1.out","a");
@@ -208,6 +217,15 @@ void output1(int new, char d, int cx, int cy)
 				fout[7]=fopen("uz.out","a");
 				fout[8]=fopen("rho.out","a");
 			}
+            if (phi_on!=0) {
+                fout[9] = fopen("phi.out","a");
+                fout[10]= fopen("mu.out","a");
+            }
+	        if (flow_on!=0 && (Q_on!=0 || phi_on!=0)) {
+                fout[11]= fopen("spx.out","a");
+                fout[12]= fopen("spy.out","a");
+                fout[13]= fopen("spz.out","a");
+            }
 		}
 		
 		switch (d) {
@@ -245,7 +263,16 @@ void output1(int new, char d, int cx, int cy)
 						for (ii=0; ii<5; ii++) {
 							fprintf(fout[ii],"%22.15e ",Q[id*5+ii]);
 						}
-					}								
+					}
+                    if (phi_on!=0) {
+                        fprintf(fout[9],"%22.15e ",ly_phi[id]);                
+                        fprintf(fout[10],"%22.15e ",ly_mu[id]);                
+                    }
+	                if (flow_on!=0 && (Q_on!=0 || phi_on!=0)) {
+                        fprintf(fout[11],"%22.15e ",sigma_p[id*3]);
+                        fprintf(fout[12],"%22.15e ",sigma_p[id*3+1]);
+                        fprintf(fout[13],"%22.15e ",sigma_p[id*3+2]); 
+                    }
 				}
 			}
 		}
@@ -262,12 +289,26 @@ void output1(int new, char d, int cx, int cy)
 				fclose(fout[ii]);
 			}
 		}
+        if (phi_on!=0) {
+            fprintf(fout[9],"\n");
+            fclose(fout[9]);
+            fprintf(fout[10],"\n");
+            fclose(fout[10]);
+        }
+	    if (flow_on!=0 && (Q_on!=0 || phi_on!=0)) {
+            fprintf(fout[11],"\n");
+            fclose(fout[11]);
+            fprintf(fout[12],"\n");
+            fclose(fout[12]);
+            fprintf(fout[13],"\n");
+            fclose(fout[13]);
+        }
 	}
 }
 
 void output3(int new)
 {
-	FILE *grid, *qfile, *rfile, *ufile, *sfile, *ifile, *pfile;
+	FILE *grid, *qfile, *rfile, *ufile, *sfile, *ifile, *pfile, *mfile;
 	int i, j, k, id;
 
 	if (myid == root) {
@@ -279,6 +320,7 @@ void output3(int new)
 			sfile= fopen("stress_3d.out","w");
 			ifile= fopen("type_3d.out","w");
             pfile= fopen("phi_3d.out","w");
+            mfile= fopen("mu_3d.out","w");
 			
 			fprintf(grid,"Nx Ny Nz %d %d %d\n",Nx,Ny,Nz);
 			for (k=0; k<Nz; k++) {
@@ -297,6 +339,7 @@ void output3(int new)
 			sfile= fopen("stress_3d.out","a");
 			ifile= fopen("type_3d.out","a");
             pfile= fopen("phi_3d.out","a");
+            mfile= fopen("mu_3d.out","a");
 		}
 		
 		for (id=0; id<points*5; id+=5) {
@@ -308,11 +351,12 @@ void output3(int new)
 			fprintf(ufile,"%e %e %e\n",u[id*3],u[id*3+1],u[id*3+2]);
 			fprintf(ifile,"%d\n",info[id]);
 			fprintf(pfile,"%e\n",ly_phi[id]);
+			fprintf(mfile,"%e\n",ly_mu[id]);
 		}
 		
 		if (Q_on!=0 && flow_on!=0) {
 			for (id=0; id<points; id++) {
-	//			fprintf(sfile,"%f %f %f\n",sigma_p[id*3],sigma_p[id*3+1],sigma_p[id*3+2]);
+				fprintf(sfile,"%f %f %f\n",sigma_p[id*3],sigma_p[id*3+1],sigma_p[id*3+2]);
 			}
 		}
 		
@@ -322,6 +366,7 @@ void output3(int new)
 		fclose(sfile);
 		fclose(ifile);
 		fclose(pfile);
+		fclose(mfile);
 	}
 }
 
@@ -346,25 +391,38 @@ void output_time(double t_begin)
 
 void monitor()
 {
-	double err, k_eng_new=0., rhototal=0, utotal[3]={0.}, k_diff;
+	double err, k_eng_new=0., rhototal=0, utotal[3]={0.}, k_diff, phi_toti;
 	int i, iu;
+
+    if (phi_on!=0) {        // calculate total phi
+        phi_toti = 0.;
+        for (i=0; i<lpoint; i++) phi_toti += ly_phi[i];
+	    MPI_Reduce(&phi_toti, &ly_phi_tot, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
+    }
 		
-	if(myid==0){
+	if (myid==0) {
 		printf("\nt=%d\n",t_current);
 		
 		if (Q_on!=0) {
 			err = (e_toto-e_tot)/e_tot;
 			printf("E_tot=%lf, E_ld=%lf, E_el=%lf, E_ch=%lf, E_sf=%lf\n",e_tot,e_ld,e_el,e_ch,e_sf);
 			printf("E_L1=%le, E_L2=%le, E_L3=%le, E_L4=%le\n",e_L1,e_L2,e_L3,e_L4);
-            printf("E_ly=%le\n",e_ly);
 			e_toto=e_tot;
 			printf("dif_Q^2=%35.30f\n",Q_diff);
-			printf("dif_phi^2=%35.30f\n",phi_diff);
-			if (Q_diff<Q_tol && Q_diff>-Q_tol && phi_diff<1e-15) {
-				printf("Q & phi converged\n");
+			if (Q_diff<Q_tol && Q_diff>-Q_tol) {
+				printf("Q converged\n");
 				qconverge=1;
 			}
 		}
+
+        if (phi_on!=0) {
+			printf("e_ly=%lf, total phi=%lf\n",e_ly,ly_phi_tot);
+			printf("dif_phi^2=%35.30f\n",phi_diff);
+            if (phi_diff<u_tol && phi_diff>-u_tol) {
+				printf("phi converged\n");
+				pconverge=1;
+            }
+        }
 		
 		if (flow_on!=0) {
 			for (i=0; i<points; i++) {
@@ -385,7 +443,6 @@ void monitor()
 				k_diff = (k_eng_new-k_eng)/k_eng;
 			}		
 			printf("diff_k =%30.25f\n",k_diff);
-            printf("k_eng=%30.25f\n",k_eng_new);
 			if( k_diff<u_tol && k_diff>-u_tol ) {
 				printf("u converged\n");
 				uconverge=1;
@@ -395,6 +452,7 @@ void monitor()
 	}
 	MPI_Bcast(&uconverge, 1, MPI_INT, root, MPI_COMM_WORLD);
 	MPI_Bcast(&qconverge, 1, MPI_INT, root, MPI_COMM_WORLD);
+	MPI_Bcast(&pconverge, 1, MPI_INT, root, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
@@ -466,4 +524,58 @@ void normalize(double *x, double *y, double *z)
 	*x = nx*ir;
 	*y = ny*ir;
 	*z = nz*ir;
+}
+
+int mod(int n, int k)
+{
+    // if k=5, returns -2 ~ +2
+    int m;
+    
+    m = n%k;
+    
+    if (m>k/2) m-=k;
+    if (m<-k/2) m+=k;
+    
+    return m;
+}
+
+void mirror(int l2r)
+{
+    // l2r>=1: mirror copy left to right; l2r<=0: mirror copy right to left
+    int id, iq, i, j, k, id0, id1, ii;
+    double mirror_flag, cx;
+
+    mirror_flag = (double)l2r - 0.5;
+    cx          = 0.5*(double)Nx - 0.5;
+
+	for (id=0, iq=0; id<lpoint; id++, iq+=5) {
+        id0 = id + myid*point;
+        i   = id0%Nx;
+        j   =(id0/Nx)%Ny;
+        k   =(id0/Nx)/Ny;
+
+        if ((i-cx)*mirror_flag>0) {
+            id1 = Nx-1-i + (j+k*Ny)*Nx;
+            id1-= myid*point;
+            if (Q_on!=0) {
+                Q[iq]   = Q[id1*5];
+                Q[iq+1] =-Q[id1*5+1];
+                Q[iq+2] =-Q[id1*5+2];
+                Q[iq+3] = Q[id1*5+3];
+                Q[iq+4] = Q[id1*5+4];
+            }
+            if (phi_on!=0) {
+                ly_phi[id] = ly_phi[id1];
+                ly_mu[id]  = ly_mu[id1];
+            }
+            if (flow_on!=0) {
+                for (ii=0; ii<3; ii++) u[id*3+ii] = u[id1*3+ii];
+            }
+        }
+    }
+
+	MPI_Win_fence(0,winq);
+	MPI_Win_fence(0,winly_phi);
+	MPI_Win_fence(0,winu);
+	MPI_Barrier(MPI_COMM_WORLD);
 }

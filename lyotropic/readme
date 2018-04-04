@@ -4,12 +4,16 @@ same as the svn commited folder channel-MPI-multi
 We calculate stress for multi-elastic-constant system
 
 
-based on channel-MPI-multi3, add active term
+based on channel-MPI-multi, surface derivative calculations are updated
 
+Sep/15/2017:
+based on channel-MPI-multi-exp, add activity
 
-based on channel-MPI-multi3-active, change initial config -31 & -32 to be consistent with those in channel-MPI-multi3-backflow
+Jan/25/2018:
+based on channel-MPI-multi-exp-active, incorporte s3 into this version so that phi is included
 
-
-
-
-based on channel-MPI-multi3-active2, add concentration so that the system is lyotropic
+Feb/26/2018:
+now the system's state can be mirrored from left(right) to right(left)
+add initial -421 for off-center radial droplet
+add initial -433/-434/-435 for tactoid coalescence at 3 angles (0, 45, 90)
+add initial -412 for single nematic tactoid

@@ -57,11 +57,11 @@ void evol_Q()
 				}
 			}
 			
-        	Q[iq]  += qdt * ( H[iq]   + S[0][0] );
-        	Q[iq+1]+= qdt * ( H[iq+1] + S[0][1] );
-        	Q[iq+2]+= qdt * ( H[iq+2] + S[0][2] );
-        	Q[iq+3]+= qdt * ( H[iq+3] + S[1][1] );
-        	Q[iq+4]+= qdt * ( H[iq+4] + S[1][2] );
+			Q[iq]  += qdt * ( H[iq]   + S[0][0] );
+			Q[iq+1]+= qdt * ( H[iq+1] + S[0][1] );
+			Q[iq+2]+= qdt * ( H[iq+2] + S[0][2] );
+			Q[iq+3]+= qdt * ( H[iq+3] + S[1][1] );
+			Q[iq+4]+= qdt * ( H[iq+4] + S[1][2] );
 			if (flag==1) {
 				Q_diffi += (H[iq]+S[0][0])*(H[iq]+S[0][0])+(H[iq+1]+S[0][1])*(H[iq+1]+S[0][1])+(H[iq+2]+S[0][2])*(H[iq+2]+S[0][2])+(H[iq+3]+S[1][1])*(H[iq+3]+S[1][1])+(H[iq+4]+S[1][2])*(H[iq+4]+S[1][2])+(H[iq]+S[0][0])*(H[iq+3]+S[1][1]);
 			}
@@ -155,20 +155,20 @@ void evol_Q()
 
 void cal_dQ()
 {
-	int id, iq, ib, iu, ii, nid[6], flag=0, ip, ip1, ip2;
-	double dxQ[6], dyQ[6], dzQ[6], d2xQ[6], d2yQ[6], d2zQ[6], trqq, qqq, trH3rd, eld, eel, ech, ely;
-	double e_ldi, e_eli, e_chi, e_sfi, e_lyi;
+	int id, iq, ib, iu, ii, nid[6], flag=0, ip, ip1, ip2, ip3, bid, sii, sjj, herid, mp1, mp2, inext;
+	double dxQ[6], dyQ[6], dzQ[6], d2xQ[6], d2yQ[6], d2zQ[6], trqq, qqq, trH3rd, eld, eel, ech, t1[6], t2[6];
+	double e_ldi, e_eli, e_chi, e_sfi;
 	real *p=NULL;
 
 	int ip0, dxy, dyx, dxz, dzx, dyz, dzy;
 	double dxyQ[5], dxzQ[5], dyzQ[5], dQm[5], dQp[5], Qikckj[3][3], dQ[3][3], QdQ[5], Qijcj[3], Qc2[5], dQ2;
 	double e_L1i, e_L2i, e_L3i, e_L4i;
 
-	double ttemp, tt, nu_dot_Q[3], nu_dot_dQ;
+	double ttemp, tt, nu_dot_Q[3], nu_dot_dQ, nu[3];
 	int i, j, k, iim, iip, jjm, jjp, kkm, kkp, id1, id2, id3, id4;
 
     double dx_phi, dy_phi, dz_phi, d2x_phi, d2y_phi, d2z_phi, phi, phi2, dxy_phi, dyz_phi, dxz_phi, fpp, fpm, fmp, fmm;
-	
+
 
 	if (t_current%t_print==0) {
 		flag  = 1;
@@ -181,7 +181,6 @@ void cal_dQ()
         e_L2i = 0;
         e_L3i = 0;
 		e_L4i = 0;
-        e_lyi = 0;
 	}
 	
 	for (iq=0, ib=0, id=0; id<lpoint; iq+=5, ib+=6, id++){
@@ -194,9 +193,6 @@ void cal_dQ()
             dx_phi  = 0.;
             dy_phi  = 0.;
             dz_phi  = 0.;
-            d2x_phi = 0.;
-            d2y_phi = 0.;
-            d2z_phi = 0.;
 			
 			ip1 = nid[0];
 			ip2 = nid[1];
@@ -205,22 +201,16 @@ void cal_dQ()
 					dxQ[ii] = 0.5 * (Q[ip2+ii] - Q[ip1+ii]);
 					d2xQ[ii]= Q[ip2+ii] - 2.0 * Q[iq+ii] + Q[ip1+ii];
 				}
-                dx_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
-                d2x_phi = ly_phi[ip2/5] - 2.*ly_phi[id] + ly_phi[ip1/5];
 			} else if (ip1%5!=0 && ip2%5==0) {
 				for (ii=0; ii<5; ii++) {
 					dxQ[ii] = third*Q[ip2+ii]+*(p+ii)-four3rd*Qsurf[ip1+1+ii];
 					d2xQ[ii]= four3rd*Q[ip2+ii]-4.0*(*(p+ii))+eight3rd*Qsurf[ip1+1+ii];
 				}
-                dx_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
-                d2x_phi = ly_phi[ip2/5] - ly_phi[id];
 			} else if (ip1%5==0 && ip2%5!=0) {
 				for (ii=0; ii<5; ii++) {
 					dxQ[ii] = four3rd*Qsurf[ip2+1+ii]-*(p+ii)-third*Q[ip1+ii];
 					d2xQ[ii]= eight3rd*Qsurf[ip2+1+ii]-4.0*(*(p+ii))+four3rd*Q[ip1+ii];
 				}
-                dx_phi  = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
-                d2x_phi = ly_phi[ip1/5] - ly_phi[id];
 			} else if (ip1%5!=0 && ip2%5!=0) {
                 for (ii=0; ii<5; ii++) {
                     dxQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
@@ -238,27 +228,21 @@ void cal_dQ()
 					dyQ[ii] = 0.5 * (Q[ip2+ii] - Q[ip1+ii]);
 					d2yQ[ii]= Q[ip1+ii] - 2.0 * Q[iq+ii] + Q[ip2+ii];
 				}
-                dy_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
-                d2y_phi = ly_phi[ip2/5] - 2.*ly_phi[id] + ly_phi[ip1/5];
 			} else if (ip1%5!=0 && ip2%5==0) {
 				for (ii=0; ii<5; ii++) {
 					dyQ[ii] = third*Q[ip2+ii]+*(p+ii)-four3rd*Qsurf[ip1+1+ii];
 					d2yQ[ii]= four3rd*Q[ip2+ii]-4.0*(*(p+ii))+eight3rd*Qsurf[ip1+1+ii];
 				}
-                dy_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
-                d2y_phi = ly_phi[ip2/5] - ly_phi[id];
 			} else if (ip1%5==0 && ip2%5!=0) {
 				for (ii=0; ii<5; ii++) {
 					dyQ[ii] = four3rd*Qsurf[ip2+1+ii]-*(p+ii)-third*Q[ip1+ii];
 					d2yQ[ii]= eight3rd*Qsurf[ip2+1+ii]-4.0*(*(p+ii))+four3rd*Q[ip1+ii];
 				}
-                dy_phi  = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
-                d2y_phi = ly_phi[ip1/5] - ly_phi[id];
             } else if (ip1%5!=0 && ip2%5!=0) {
-                    for (ii=0; ii<5; ii++) {
-                            dyQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
-                            d2yQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
-                    }
+                for (ii=0; ii<5; ii++) {
+                    dyQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
+                    d2yQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
+                }
 			} else {
 				printf("surface too close\n");
 				exit(-1);
@@ -271,133 +255,82 @@ void cal_dQ()
 					dzQ[ii] = 0.5 * (Q[ip2+ii] - Q[ip1+ii]);
 					d2zQ[ii]= Q[ip1+ii] - 2.0 * Q[iq+ii] + Q[ip2+ii];
 				}
-                dz_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
-                d2z_phi = ly_phi[ip2/5] - 2.*ly_phi[id] + ly_phi[ip1/5];
 			} else if (ip1%5!=0 && ip2%5==0) {
 				for (ii=0; ii<5; ii++) {
 					dzQ[ii] = third*Q[ip2+ii]+*(p+ii)-four3rd*Qsurf[ip1+1+ii];
 					d2zQ[ii]= four3rd*(Q[ip2+ii]-*(p+ii))+eight3rd*(Qsurf[ip1+1+ii]-*(p+ii));					
 				}
-                dz_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
-                d2z_phi = ly_phi[ip2/5] - ly_phi[id];
 			} else if (ip1%5==0 && ip2%5!=0) {
 				for (ii=0; ii<5; ii++) {
 					dzQ[ii] =-(third*Q[ip1+ii]+*(p+ii)-four3rd*Qsurf[ip2+1+ii]);
 					d2zQ[ii]= four3rd*(Q[ip1+ii]-*(p+ii))+eight3rd*(Qsurf[ip2+1+ii]-*(p+ii));
 				}
-                dz_phi  = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
-                d2z_phi = ly_phi[ip1/5] - ly_phi[id];
             } else if (ip1%5!=0 && ip2%5!=0) {
                 for (ii=0; ii<5; ii++) {
-                        dzQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
-                        d2zQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
+                    dzQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
+                    d2zQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
                 }
 			} else {
 				printf("surface too close\n");
 				exit(-1);
 			}
 
-            // cross derivatives
-            if (ly_an!=0) {
-                phi = ly_phi[id];
-                if (nid[0]%5==0) {
-                    ip1 = next_neighbor(id,0,2);
-                    ip2 = next_neighbor(id,0,3);
-                    if (ip1%5==0) fmm = ly_phi[ip1/5];
-                    else fmm = ly_phi[nid[0]/5];
-                    if (ip2%5==0) fmp = ly_phi[ip2/5];
-                    else fmp = ly_phi[nid[0]/5];
+            if (phi_on!=0 && ly_an!=0) {
+                ip1 = nid[0];
+                ip2 = nid[1];
+                if (ip1%5==0 && ip2%5==0) {
+                    dx_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5==0) {
+                    dx_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
+                } else if (ip1%5==0 && ip2%5!=0) {
+                    dx_phi  = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5!=0) {
                 } else {
-                    if (nid[2]%5==0) fmm = ly_phi[nid[2]/5];
-                    else fmm = phi;
-                    if (nid[3]%5==0) fmp = ly_phi[nid[3]/5];
-                    else fmp = phi;
+                	printf("surface too close\n");
+                	exit(-1);
                 }
-                if (nid[1]%5==0) {
-                    ip1 = next_neighbor(id,1,2);
-                    ip2 = next_neighbor(id,1,3);
-                    if (ip1%5==0) fpm = ly_phi[ip1/5];
-                    else fpm = ly_phi[nid[1]/5];
-                    if (ip2%5==0) fpp = ly_phi[ip2/5];
-                    else fpp = ly_phi[nid[1]/5];
-                } else {
-                    if (nid[2]%5==0) fpm = ly_phi[nid[2]/5];
-                    else fpm = phi;
-                    if (nid[3]%5==0) fpp = ly_phi[nid[3]/5];
-                    else fpp = phi;
-                }
-                dxy_phi = .25*(fmm+fpp-fmp-fpm);
 
-                if (nid[2]%5==0) {
-                    ip1 = next_neighbor(id,2,4);
-                    ip2 = next_neighbor(id,2,5);
-                    if (ip1%5==0) fmm = ly_phi[ip1/5];
-                    else fmm = ly_phi[nid[2]/5];
-                    if (ip2%5==0) fmp = ly_phi[ip2/5];
-                    else fmp = ly_phi[nid[2]/5];
+                ip1 = nid[2];
+                ip2 = nid[3];
+                if (ip1%5==0 && ip2%5==0) {
+                    dy_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5==0) {
+                    dy_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
+                } else if (ip1%5==0 && ip2%5!=0) {
+                    dy_phi  = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5!=0) {
                 } else {
-                    if (nid[4]%5==0) fmm = ly_phi[nid[4]/5];
-                    else fmm = phi;
-                    if (nid[5]%5==0) fmp = ly_phi[nid[5]/5];
-                    else fmp = phi;
+                	printf("surface too close\n");
+                	exit(-1);
                 }
-                if (nid[3]%5==0) {
-                    ip1 = next_neighbor(id,3,4);
-                    ip2 = next_neighbor(id,3,5);
-                    if (ip1%5==0) fpm = ly_phi[ip1/5];
-                    else fpm = ly_phi[nid[3]/5];
-                    if (ip2%5==0) fpp = ly_phi[ip2/5];
-                    else fpp = ly_phi[nid[3]/5];
+                
+                ip1 = nid[4];
+                ip2 = nid[5];
+                if (ip1%5==0 && ip2%5==0) {
+                    dz_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5==0) {
+                    dz_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
+                } else if (ip1%5==0 && ip2%5!=0) {
+                    dz_phi  = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5!=0) {
                 } else {
-                    if (nid[4]%5==0) fpm = ly_phi[nid[4]/5];
-                    else fpm = phi;
-                    if (nid[5]%5==0) fpp = ly_phi[nid[5]/5];
-                    else fpp = phi;
+                	printf("surface too close\n");
+                	exit(-1);
                 }
-                dyz_phi = .25*(fmm+fpp-fmp-fpm);
-
-                if (nid[0]%5==0) {
-                    ip1 = next_neighbor(id,0,4);
-                    ip2 = next_neighbor(id,0,5);
-                    if (ip1%5==0) fmm = ly_phi[ip1/5];
-                    else fmm = ly_phi[nid[0]/5];
-                    if (ip2%5==0) fmp = ly_phi[ip2/5];
-                    else fmp = ly_phi[nid[0]/5];
-                } else {
-                    if (nid[4]%5==0) fmm = ly_phi[nid[4]/5];
-                    else fmm = phi;
-                    if (nid[5]%5==0) fmp = ly_phi[nid[5]/5];
-                    else fmp = phi;
-                }
-                if (nid[1]%5==0) {
-                    ip1 = next_neighbor(id,1,4);
-                    ip2 = next_neighbor(id,1,5);
-                    if (ip1%5==0) fpm = ly_phi[ip1/5];
-                    else fpm = ly_phi[nid[1]/5];
-                    if (ip2%5==0) fpp = ly_phi[ip2/5];
-                    else fpp = ly_phi[nid[1]/5];
-                } else {
-                    if (nid[4]%5==0) fpm = ly_phi[nid[4]/5];
-                    else fpm = phi;
-                    if (nid[5]%5==0) fpp = ly_phi[nid[5]/5];
-                    else fpp = phi;
-                }
-                dxz_phi = .25*(fmm+fpp-fmp-fpm);
             }
 
 			trqq = trQQ(p);
 			
-            phi = ly_phi[id];
-            phi2= phi*phi;
-            ly_mu[id] = ly_a*phi + ly_b*phi2 + ly_c*phi*phi2 - A_ldg*ldg_b*S_lc*S_lc*trqq - ly_k*(d2x_phi+d2y_phi+d2z_phi);
-            ly_mu[id]-= ly_an*( (d2x_phi-d2z_phi)*Q[iq]+(d2y_phi-d2z_phi)*Q[iq+3]+2.*(dxy_phi*Q[iq+1]+dxz_phi*Q[iq+2]+dyz_phi*Q[iq+4]) );
-            ly_mu[id]-= ly_an*( dx_phi*dxQ[0]+dy_phi*dyQ[3]-dz_phi*(dzQ[0]+dzQ[3])+dx_phi*(dyQ[1]+dzQ[2])+dy_phi*(dxQ[1]+dzQ[4])+dz_phi*(dxQ[2]+dyQ[4]) );
-			
 			for (ii=0; ii<5; ii++) {
-                H[iq+ii] = -(A_ldg*( 2.*(ldg_a-ldg_b*phi)*S_lc*S_lc*Q[iq+ii]-3.*ldg_c*S_lc*(QQ(p,ii)-OneThirdDelta(ii)*trqq)+2.25*trqq*Q[iq+ii] ) - L1 * (d2xQ[ii]+d2yQ[ii]+d2zQ[ii]) );
+                H[iq+ii] = -(A_ldg*( 2.*(ldg_a-ldg_b)*S_lc2*Q[iq+ii]-3.*ldg_c*S_lc*(QQ(p,ii)-OneThirdDelta(ii)*trqq)+2.25*trqq*Q[iq+ii] ) - L1 * (d2xQ[ii]+d2yQ[ii]+d2zQ[ii]) );
 			}
 
-            if (ly_an!=0) {
+            if (phi_on!=0) {
+                phi = ly_phi[id];
+                for (ii=0; ii<5; ii++) H[iq+ii] += A_ldg*2.*ldg_b*(phi-1.)*S_lc2*Q[iq+ii];
+            }
+
+            if (phi_on!=0 && ly_an!=0) {
                 H[iq]  -= ly_an*(two3rd*dx_phi*dx_phi - third*dy_phi*dy_phi - third*dz_phi*dz_phi);
                 H[iq+1]-= ly_an*dx_phi*dy_phi;
                 H[iq+2]-= ly_an*dx_phi*dz_phi;
@@ -975,10 +908,10 @@ void cal_dQ()
 					Qijcj[1]= dxQ[1] + dyQ[3] + dzQ[4];
 					Qijcj[2]= dxQ[2] + dyQ[4] - dzQ[0] - dzQ[3];
 					Qc2[0]  = dxQ[0]*Qijcj[0] + dyQ[0]*Qijcj[1] + dzQ[0]*Qijcj[2];
-                                        Qc2[1]  = dxQ[1]*Qijcj[0] + dyQ[1]*Qijcj[1] + dzQ[1]*Qijcj[2];
-                                        Qc2[2]  = dxQ[2]*Qijcj[0] + dyQ[2]*Qijcj[1] + dzQ[2]*Qijcj[2];
-                                        Qc2[3]  = dxQ[3]*Qijcj[0] + dyQ[3]*Qijcj[1] + dzQ[3]*Qijcj[2];
-                                        Qc2[4]  = dxQ[4]*Qijcj[0] + dyQ[4]*Qijcj[1] + dzQ[4]*Qijcj[2];
+                    Qc2[1]  = dxQ[1]*Qijcj[0] + dyQ[1]*Qijcj[1] + dzQ[1]*Qijcj[2];
+                    Qc2[2]  = dxQ[2]*Qijcj[0] + dyQ[2]*Qijcj[1] + dzQ[2]*Qijcj[2];
+                    Qc2[3]  = dxQ[3]*Qijcj[0] + dyQ[3]*Qijcj[1] + dzQ[3]*Qijcj[2];
+                    Qc2[4]  = dxQ[4]*Qijcj[0] + dyQ[4]*Qijcj[1] + dzQ[4]*Qijcj[2];
 
 					H[iq]  +=-L3*( 0.5*(dQ[0][0] - third*dQ2) - QdQ[0] - Qc2[0] );
 					H[iq+1]+=-L3*( 0.5* dQ[0][1]              - QdQ[1] - Qc2[1] );
@@ -990,8 +923,8 @@ void cal_dQ()
 			
 			if (flag==1) {
 				qqq = QQQ(p);
-                eld = A_ldg*((1-.5*sqrt3)*(1.5-2.*phi)*S_lc*S_lc*trqq-1.5*(sqrt3-1.)*S_lc*qqq+.5625*trqq*trqq);
-                ely = phi*(0.5+phi*(third+0.25*phi)) - ly_e0;
+                eld = A_ldg * ((ldg_a-ldg_b)*S_lc2*trqq-ldg_c*S_lc*qqq+0.5625*trqq*trqq);
+                if (phi_on!=0) eld += -A_ldg*ldg_b*(phi-1.)*S_lc2*trqq;
 				eel = dxQ[0]*dxQ[0] + dyQ[0]*dyQ[0] + dzQ[0]*dzQ[0];				
 				for (ii=1; ii<5; ii++) {
 					eel += dxQ[ii]*dxQ[ii] + dyQ[ii]*dyQ[ii] + dzQ[ii]*dzQ[ii];
@@ -1007,7 +940,6 @@ void cal_dQ()
 				e_L4i+= 2.*( dzQ[0]*dxQ[2] + dzQ[1]*dxQ[4] - dzQ[2]*(dxQ[0]+dxQ[3]) ); 
 				e_L4i+= 2.*( dzQ[1]*dyQ[2] + dzQ[3]*dyQ[4] - dzQ[4]*(dyQ[0]+dyQ[3]) );
 				e_ldi+= eld;
-                e_lyi+= ely;
 				e_eli+= eel;
 				if (q_ch>0) {
 					ech   = Q[iq+0] * dyQ[2] + Q[iq+1] * dyQ[4] - Q[iq+2] *(dyQ[0]+dyQ[3]) \
@@ -1032,121 +964,235 @@ void cal_dQ()
 			}
 		}
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	if (wall_x!=0 || wall_y!=0 || wall_z!=0 || npar>0) {
-		for (id=0; id<node; id++) {
+		for (id=0; id<node; id++) {                     // id: surf point id
 			if (id+myid*node<nsurf) {
 				iq = id * 5;
 				ip = iq * 2;
-				if (surf[ip]>0) {
+				if (surf[ip]>0) {                       // finite anchoring
 					ib = id * 6;
-					if (surf[ip+2]!=0) {
-						ip1 = neighbsurf[ib];
-						ip2 = neighbsurf[ib+1];
-						if (ip1%5==0 && ip2%5==0) {
-							for (ii=0; ii<5; ii++) {
-								dxQ[ii] = -third*Q[ip2+ii] + 3.0*Q[ip1+ii] -eight3rd*Qsurf[iq+ii];
-							}
-						} else if (ip1%5==4 || ip1%5==-1) {
-							for (ii=0; ii<5; ii++) {
-								dxQ[ii] = 0.5*(Q[ip2+ii] - Q[ip1+1+ii]);
-							}
-						} else if (ip1%5==3 || ip1%5==-2) {
-							for (ii=0; ii<5; ii++) {
-								dxQ[ii] = -0.5*Q[ip2+ii] + 2.0*Q[ip1+2+ii] - 1.5*Qsurf[iq+ii];
-							}
-						}
-						if (surf[ip+2]<0) for (ii=0; ii<5; ii++) dxQ[ii]=-dxQ[ii];
-					}
+                    for (ii=0; ii<3; ii++) {
+                        nu[ii] = surf[ip+2+ii];         // nu[3]: surface normal
+                        if (neighbsurf[ib+ii*2]%5==0) {
+                            bid = neighbsurf[ib+ii*2]/5;// bid: bulk id nearest to surf point id
+                            sii = ii*2;                 // orientation towards surface [0-5]
+                            sjj = ii*2+1;               // orientation towards bulk [0-5]
+                            if (nu[ii]<0) {
+                                sii = ii*2 + 1;
+                                sjj = ii*2;
+                            }
+                        }
+                    }
+                    herid = (bid+myid*point)/point;     // herid: processor id storing bid
+                    for (ii=0; ii<6; ii++) {            // nid[6]: neighbors of bid (x5)
+                        nid[ii] = neighb[bid*6+ii];
+                        if (nid[ii]%5==0) nid[ii] += (herid-myid)*point*5;
+                        else nid[ii] += (herid-myid)*node*5;
+                    }
+                    if (debug_on!=0 && nid[sii]!=iq-1) {
+                        printf("error: bug in surface evolution!: %d %d\n",nid[sii],iq-1);
+                        exit(-1);
+                    }
+                    
+                    // x derivative for surf point id
+                    ip1 = neighbsurf[ib];
+                    ip2 = neighbsurf[ib+1];
+                    mp1 = mod(ip1,5);                   // remainder after division of ip1 by 5 [-2~+2]
+                    mp2 = mod(ip2,5);                   // remainder after division of ip2 by 5 [-2~+2]
+                    if (mp1==0 && mp2==0) {             // arm (+1/2, +3/2), main direction
+						for (ii=0; ii<5; ii++) dxQ[ii] = -third*Q[ip2+ii] + 3.0*Q[ip1+ii] -eight3rd*Qsurf[iq+ii];
+						if (nu[0]<0) for (ii=0; ii<5; ii++) dxQ[ii]=-dxQ[ii];
+                        
+                    } else if (mp1==0 && mp2==-1) {     // arm (+1/2, +1), main direction
+                        for (ii=0; ii<5; ii++) dxQ[ii] = -Qsurf[ip2-mp2+ii] + 4*Q[ip1+ii] - 3*Qsurf[iq+ii];
+						if (nu[0]<0) for (ii=0; ii<5; ii++) dxQ[ii]=-dxQ[ii];
+                        
+                    } else if (mp1==1 && mp2==-1) {     // arm (-1/2, +1/2)
+						for (ii=0; ii<5; ii++) dxQ[ii] = Qsurf[ip2-mp2+ii] - Qsurf[ip1-mp1+ii];
+                        
+                    } else if (mp1<0 && mp2>0) {        // arm (-1, +1)
+                        if (mp1==-1) for (ii=0; ii<5; ii++) t1[ii] = Qsurf[ip1-mp1+ii];
+                        else for (ii=0; ii<5; ii++) t1[ii] = 0.5*(Q[ip1-mp1+ii] + Q[nid[0]+ii]);
+                        if (mp2== 1) for (ii=0; ii<5; ii++) t2[ii] = Qsurf[ip2-mp2+ii];
+                        else for (ii=0; ii<5; ii++) t2[ii] = 0.5*(Q[ip2-mp2+ii] + Q[nid[1]+ii]);
+                        for (ii=0; ii<5; ii++) dxQ[ii] = 0.5*(t2[ii]-t1[ii]);
+                        
+                    } else if (mp1*mp2>0) {             // arm (+1, +2)
+                        if (mp1>0) inext = 1;           // +x direction
+                        else inext = 0;                 // -x direction
+                        if (abs(mp1)==1) for (ii=0; ii<5; ii++) t1[ii] = Qsurf[ip1-mp1+ii];
+                        else for (ii=0; ii<5; ii++) t1[ii] = 0.5*(Q[ip1-mp1+ii]+Q[nid[inext]+ii]);
+                        if (abs(mp2)==1) for (ii=0; ii<5; ii++) t2[ii] = Qsurf[ip2-mp2+ii];
+                        else {
+                            ip3 = next_neighbor2(bid,inext,inext);
+                            for (ii=0; ii<5; ii++) t2[ii]  = 0.5*(Q[ip2-mp2+ii]+Q[ip3+ii]);
+                        }
+                        for (ii=0; ii<5; ii++) dxQ[ii] = -0.5*t2[ii] + 2.*t1[ii] - 1.5*Qsurf[iq+ii]; 
+                        if (mp1<0) for (ii=0; ii<5; ii++) dxQ[ii]=-dxQ[ii];
+                        
+                    } else if (mp1!=0 && ip2==0) {      // arm (+1)
+                        if (mp1>0) inext = 1;           // +x direction
+                        else inext = 0;                 // -x direction
+                        if (abs(mp1)==1) for (ii=0; ii<5; ii++) t1[ii] = Qsurf[ip1-mp1+ii];
+                        else for (ii=0; ii<5; ii++) t1[ii]  = 0.5*(Q[ip1-mp1+ii]+Q[nid[inext]+ii]);
+                        for (ii=0; ii<5; ii++) dxQ[ii] = t1[ii] - Qsurf[iq+ii]; 
+                        if (mp1<0) for (ii=0; ii<5; ii++) dxQ[ii]=-dxQ[ii];
+                        
+                    } else {
+                        printf("error in surface Q's x derivative calculation!");
+                        exit(-1);
+                    }
 
-					if (surf[ip+3]!=0) {
-						ip1 = neighbsurf[ib+2];
-						ip2 = neighbsurf[ib+3];
-						if (ip1%5==0 && ip2%5==0) {
-							for (ii=0; ii<5; ii++) {
-								dyQ[ii] = -third*Q[ip2+ii] + 3.0*Q[ip1+ii] -eight3rd*Qsurf[iq+ii];
-							}
-						} else if (ip1%5==4 || ip1%5==-1) {
-							for (ii=0; ii<5; ii++) {
-								dyQ[ii] = 0.5*(Q[ip2+ii] - Q[ip1+1+ii]);
-							}
-						} else if (ip1%5==3 || ip1%5==-2) {
-							for (ii=0; ii<5; ii++) {
-								dyQ[ii] = -0.5*Q[ip2+ii] + 2.0*Q[ip1+2+ii] - 1.5*Qsurf[iq+ii];
-							}
-						}
-						if (surf[ip+3]<0) for (ii=0; ii<5; ii++) dyQ[ii]=-dyQ[ii];
-					}
+                    // y derivative for surf point id
+                    ip1 = neighbsurf[ib+2];
+                    ip2 = neighbsurf[ib+3];
+                    mp1 = mod(ip1,5);                   // remainder after division of ip1 by 5 [-2~+2]
+                    mp2 = mod(ip2,5);                   // remainder after division of ip2 by 5 [-2~+2]
+                    if (mp1==0 && mp2==0) {             // arm (+1/2, +3/2), main direction
+						for (ii=0; ii<5; ii++) dyQ[ii] = -third*Q[ip2+ii] + 3.0*Q[ip1+ii] -eight3rd*Qsurf[iq+ii];
+						if (nu[1]<0) for (ii=0; ii<5; ii++) dyQ[ii]=-dyQ[ii];
+                        
+                    } else if (mp1==0 && mp2==-1) {     // arm (+1/2, +1), main direction
+                        for (ii=0; ii<5; ii++) dyQ[ii] = -Qsurf[ip2-mp2+ii] + 4.*Q[ip1+ii] - 3.*Qsurf[iq+ii];
+						if (nu[1]<0) for (ii=0; ii<5; ii++) dyQ[ii]=-dyQ[ii];
+                        
+                    } else if (mp1==1 && mp2==-1) {     // arm (-1/2, +1/2)
+						for (ii=0; ii<5; ii++) dyQ[ii] = Qsurf[ip2-mp2+ii] - Qsurf[ip1-mp1+ii];
+                        
+                    } else if (mp1<0 && mp2>0) {        // arm (-1, +1)
+                        if (mp1==-1) for (ii=0; ii<5; ii++) t1[ii] = Qsurf[ip1-mp1+ii];
+                        else for (ii=0; ii<5; ii++) t1[ii] = 0.5*(Q[ip1-mp1+ii] + Q[nid[2]+ii]);
+                        if (mp2== 1) for (ii=0; ii<5; ii++) t2[ii] = Qsurf[ip2-mp2+ii];
+                        else for (ii=0; ii<5; ii++) t2[ii] = 0.5*(Q[ip2-mp2+ii] + Q[nid[3]+ii]);
+                        for (ii=0; ii<5; ii++) dyQ[ii] = 0.5*(t2[ii]-t1[ii]);
+                        
+                    } else if (mp1*mp2>0) {             // arm (+1, +2)
+                        if (mp1>0) inext = 3;           // +y direction
+                        else inext = 2;                 // -y direction
+                        if (abs(mp1)==1) for (ii=0; ii<5; ii++) t1[ii] = Qsurf[ip1-mp1+ii];
+                        else for (ii=0; ii<5; ii++) t1[ii] = 0.5*(Q[ip1-mp1+ii]+Q[nid[inext]+ii]);
+                        if (abs(mp2)==1) for (ii=0; ii<5; ii++) t2[ii] = Qsurf[ip2-mp2+ii];
+                        else {
+                            ip3 = next_neighbor2(bid,inext,inext);
+                            for (ii=0; ii<5; ii++) t2[ii]  = 0.5*(Q[ip2-mp2+ii]+Q[ip3+ii]);
+                        }
+                        for (ii=0; ii<5; ii++) dyQ[ii] = -0.5*t2[ii] + 2.*t1[ii] - 1.5*Qsurf[iq+ii]; 
+                        if (mp1<0) for (ii=0; ii<5; ii++) dyQ[ii]=-dyQ[ii];
+                        
+                    } else if (mp1!=0 && ip2==0) {      // arm (+1)
+                        if (mp1>0) inext = 3;           // +y direction
+                        else inext = 2;                 // -y direction
+                        if (abs(mp1)==1) for (ii=0; ii<5; ii++) t1[ii] = Qsurf[ip1-mp1+ii];
+                        else for (ii=0; ii<5; ii++) t1[ii]  = 0.5*(Q[ip1-mp1+ii]+Q[nid[inext]+ii]);
+                        for (ii=0; ii<5; ii++) dyQ[ii] = t1[ii] - Qsurf[iq+ii]; 
+                        if (mp1<0) for (ii=0; ii<5; ii++) dyQ[ii]=-dyQ[ii];
+                        
+                    } else {
+                        printf("error in surface Q's y derivative calculation!");
+                        exit(-1);
+                    }
 
-					if (surf[ip+4]!=0) {
-						ip1 = neighbsurf[ib+4];
-						ip2 = neighbsurf[ib+5];
-						if (ip1%5==0 && ip2%5==0) {
-							for (ii=0; ii<5; ii++) {
-								dzQ[ii] = -third*Q[ip2+ii] + 3.0*Q[ip1+ii] -eight3rd*Qsurf[iq+ii];
-							}
-						} else if (ip1%5==4 || ip1%5==-1) {
-							for (ii=0; ii<5; ii++) {
-								dzQ[ii] = 0.5*(Q[ip2+ii] - Q[ip1+1+ii]);
-							}
-						} else if (ip1%5==3 || ip1%5==-2) {
-							for (ii=0; ii<5; ii++) {
-								dzQ[ii] = -0.5*Q[ip2+ii] + 2.0*Q[ip1+2+ii] - 1.5*Qsurf[iq+ii];
-							}
-						}
-						if (surf[ip+4]<0) for (ii=0; ii<5; ii++) dzQ[ii]=-dzQ[ii];
-					}
-				}
+                    // z derivative for surf point id
+                    ip1 = neighbsurf[ib+4];
+                    ip2 = neighbsurf[ib+5];
+                    mp1 = mod(ip1,5);                   // remainder after division of ip1 by 5 [-2~+2]
+                    mp2 = mod(ip2,5);                   // remainder after division of ip2 by 5 [-2~+2]
+                    if (mp1==0 && mp2==0) {             // arm (+1/2, +3/2), main direction
+						for (ii=0; ii<5; ii++) dzQ[ii] = -third*Q[ip2+ii] + 3.0*Q[ip1+ii] -eight3rd*Qsurf[iq+ii];
+						if (nu[2]<0) for (ii=0; ii<5; ii++) dzQ[ii]=-dzQ[ii];
+                        
+                    } else if (mp1==0 && mp2==-1) {     // arm (+1/2, +1), main direction
+                        for (ii=0; ii<5; ii++) dzQ[ii] = -Qsurf[ip2-mp2+ii] + 4.*Q[ip1+ii] - 3.*Qsurf[iq+ii];
+						if (nu[2]<0) for (ii=0; ii<5; ii++) dzQ[ii]=-dzQ[ii];
+                        
+                    } else if (mp1==1 && mp2==-1) {     // arm (-1/2, +1/2)
+						for (ii=0; ii<5; ii++) dzQ[ii] = Qsurf[ip2-mp2+ii] - Qsurf[ip1-mp1+ii];
+                        
+                    } else if (mp1<0 && mp2>0) {        // arm (-1, +1)
+                        if (mp1==-1) for (ii=0; ii<5; ii++) t1[ii] = Qsurf[ip1-mp1+ii];
+                        else for (ii=0; ii<5; ii++) t1[ii] = 0.5*(Q[ip1-mp1+ii] + Q[nid[4]+ii]);
+                        if (mp2== 1) for (ii=0; ii<5; ii++) t2[ii] = Qsurf[ip2-mp2+ii];
+                        else for (ii=0; ii<5; ii++) t2[ii] = 0.5*(Q[ip2-mp2+ii] + Q[nid[5]+ii]);
+                        for (ii=0; ii<5; ii++) dzQ[ii] = 0.5*(t2[ii]-t1[ii]);
+                        
+                    } else if (mp1*mp2>0) {             // arm (+1, +2)
+                        if (mp1>0) inext = 5;           // +z direction
+                        else inext = 4;                 // -z direction
+                        if (abs(mp1)==1) for (ii=0; ii<5; ii++) t1[ii] = Qsurf[ip1-mp1+ii];
+                        else for (ii=0; ii<5; ii++) t1[ii] = 0.5*(Q[ip1-mp1+ii]+Q[nid[inext]+ii]);
+                        if (abs(mp2)==1) for (ii=0; ii<5; ii++) t2[ii] = Qsurf[ip2-mp2+ii];
+                        else {
+                            ip3 = next_neighbor2(bid,inext,inext);
+                            for (ii=0; ii<5; ii++) t2[ii]  = 0.5*(Q[ip2-mp2+ii]+Q[ip3+ii]);
+                        }
+                        for (ii=0; ii<5; ii++) dzQ[ii] = -0.5*t2[ii] + 2.*t1[ii] - 1.5*Qsurf[iq+ii]; 
+                        if (mp1<0) for (ii=0; ii<5; ii++) dzQ[ii]=-dzQ[ii];
+                        
+                    } else if (mp1!=0 && ip2==0) {      // arm (+1)
+                        if (mp1>0) inext = 5;           // +z direction
+                        else inext = 4;                 // -z direction
+                        if (abs(mp1)==1) for (ii=0; ii<5; ii++) t1[ii] = Qsurf[ip1-mp1+ii];
+                        else for (ii=0; ii<5; ii++) t1[ii]  = 0.5*(Q[ip1-mp1+ii]+Q[nid[inext]+ii]);
+                        for (ii=0; ii<5; ii++) dzQ[ii] = t1[ii] - Qsurf[iq+ii]; 
+                        if (mp1<0) for (ii=0; ii<5; ii++) dzQ[ii]=-dzQ[ii];
+                        
+                    } else {
+                        printf("error in surface Q's z derivative calculation!");
+                        exit(-1);
+                    }
 
-				for (ii=0; ii<5; ii++) {
-					Hsurf[iq+ii] = L1 * ( dxQ[ii]*surf[ip+2]+dyQ[ii]*surf[ip+3]+dzQ[ii]*surf[ip+4] );
-				}
-				if (L2!=0 || L4!=0) {
-					Qijcj[0]    =  dxQ[0] + dyQ[1] + dzQ[2];
-					Qijcj[1]    =  dxQ[1] + dyQ[3] + dzQ[4];
-					Qijcj[2]    =  dxQ[2] + dyQ[4] - dzQ[0] - dzQ[3];
-				}
-				if (L2!=0) {
-					Hsurf[iq]  += L2 * Qijcj[0] * surf[ip+2];
-					Hsurf[iq+1]+= L2 *(Qijcj[0] * surf[ip+3] + Qijcj[1] * surf[ip+2]) * 0.5;
-					Hsurf[iq+2]+= L2 *(Qijcj[0] * surf[ip+4] + Qijcj[2] * surf[ip+2]) * 0.5;
-					Hsurf[iq+3]+= L2 * Qijcj[1] * surf[ip+3];
-					Hsurf[iq+4]+= L2 *(Qijcj[1] * surf[ip+4] + Qijcj[2] * surf[ip+3]) * 0.5;
-				}
-				if (L3!=0) {
-					nu_dot_Q[0] = surf[ip+2]*Qsurf[iq]  +surf[ip+3]*Qsurf[iq+1]+surf[ip+4]*Qsurf[iq+2];
-					nu_dot_Q[1] = surf[ip+2]*Qsurf[iq+1]+surf[ip+3]*Qsurf[iq+3]+surf[ip+4]*Qsurf[iq+4];
-					nu_dot_Q[2] = surf[ip+2]*Qsurf[iq+2]+surf[ip+3]*Qsurf[iq+4]-surf[ip+4]*(Qsurf[iq]+Qsurf[iq+3]);
-					Hsurf[iq]  += L3 * (nu_dot_Q[0]*dxQ[0]+nu_dot_Q[1]*dyQ[0]+nu_dot_Q[2]*dzQ[0]);
-					Hsurf[iq+1]+= L3 * (nu_dot_Q[0]*dxQ[1]+nu_dot_Q[1]*dyQ[1]+nu_dot_Q[2]*dzQ[1]);
-					Hsurf[iq+2]+= L3 * (nu_dot_Q[0]*dxQ[2]+nu_dot_Q[1]*dyQ[2]+nu_dot_Q[2]*dzQ[2]);
-					Hsurf[iq+3]+= L3 * (nu_dot_Q[0]*dxQ[3]+nu_dot_Q[1]*dyQ[3]+nu_dot_Q[2]*dzQ[3]);
-					Hsurf[iq+4]+= L3 * (nu_dot_Q[0]*dxQ[4]+nu_dot_Q[1]*dyQ[4]+nu_dot_Q[2]*dzQ[4]);
-				}
-				if (L4!=0) {
-					Hsurf[iq]  +=     L4* (surf[ip+2]* dxQ[0]        +surf[ip+3]* dxQ[1]        +surf[ip+4]* dxQ[2]);
-					Hsurf[iq+1]+= 0.5*L4* (surf[ip+2]*(dxQ[1]+dyQ[0])+surf[ip+3]*(dxQ[3]+dyQ[1])+surf[ip+4]*(dxQ[4]+dyQ[2]));
-					Hsurf[iq+2]+= 0.5*L4* (surf[ip+2]*(dxQ[2]+dzQ[0])+surf[ip+3]*(dxQ[4]+dzQ[1])+surf[ip+4]*(-dxQ[0]-dxQ[3]+dzQ[2]));
-					Hsurf[iq+3]+=     L4* (surf[ip+2]* dyQ[1]        +surf[ip+3]* dyQ[3]        +surf[ip+4]* dyQ[4]);
-					Hsurf[iq+4]+= 0.5*L4* (surf[ip+2]*(dyQ[2]+dzQ[1])+surf[ip+3]*(dyQ[4]+dzQ[3])+surf[ip+4]*(-dyQ[0]-dyQ[3]+dzQ[4]));
-				}
-				if (L2+L4!=0) {
-					nu_dot_dQ   = surf[ip+2]*Qijcj[0]+surf[ip+3]*Qijcj[1]+surf[ip+4]*Qijcj[2];
-					Hsurf[iq]  +=-(L2+L4)*third*nu_dot_dQ;
-					Hsurf[iq+3]+=-(L2+L4)*third*nu_dot_dQ;
-				}
-				if (q_ch>0) {
-					Hsurf[iq]  +=q_ch*L1*( 2.*(surf[ip+4]*Qsurf[iq+1]-surf[ip+3]*Qsurf[iq+2]) );
-					Hsurf[iq+3]+=q_ch*L1*( 2.*(surf[ip+2]*Qsurf[iq+4]-surf[ip+4]*Qsurf[iq+1]) );
-					Hsurf[iq+1]+=q_ch*L1*( surf[ip+4]* Qsurf[iq+3]           -surf[ip+3]* Qsurf[iq+4]           +surf[ip+2]*Qsurf[iq+2]-surf[ip+4]*Qsurf[iq]);
-					Hsurf[iq+2]+=q_ch*L1*( surf[ip+4]* Qsurf[iq+4]           +surf[ip+3]*(Qsurf[iq]+Qsurf[iq+3])+surf[ip+3]*Qsurf[iq]  -surf[ip+2]*Qsurf[iq+1]);
-					Hsurf[iq+4]+=q_ch*L1*(-surf[ip+2]*(Qsurf[iq]+Qsurf[iq+3])-surf[ip+4]* Qsurf[iq+2]           +surf[ip+3]*Qsurf[iq+1]-surf[ip+2]*Qsurf[iq+3]);
-				}
-				if (flag==1 && surf[ip]==1) {
-					for (ii=0; ii<5; ii++) {
-						e_sfi += surf[ip+1]*(Qsurf[iq+ii]-surf[ip+5+ii])*(Qsurf[iq+ii]-surf[ip+5+ii]);
-					}
-					e_sfi += surf[ip+1]*(Qsurf[iq]-surf[ip+5])*(Qsurf[iq+3]-surf[ip+5+3]);
+                    for (ii=0; ii<5; ii++) {
+                    	Hsurf[iq+ii] = L1 * ( dxQ[ii]*surf[ip+2]+dyQ[ii]*surf[ip+3]+dzQ[ii]*surf[ip+4] );
+                    }
+                    if (L2!=0 || L4!=0) {
+                    	Qijcj[0]    =  dxQ[0] + dyQ[1] + dzQ[2];
+                    	Qijcj[1]    =  dxQ[1] + dyQ[3] + dzQ[4];
+                    	Qijcj[2]    =  dxQ[2] + dyQ[4] - dzQ[0] - dzQ[3];
+                    }
+                    if (L2!=0) {
+                    	Hsurf[iq]  += L2 * Qijcj[0] * surf[ip+2];
+                    	Hsurf[iq+1]+= L2 *(Qijcj[0] * surf[ip+3] + Qijcj[1] * surf[ip+2]) * 0.5;
+                    	Hsurf[iq+2]+= L2 *(Qijcj[0] * surf[ip+4] + Qijcj[2] * surf[ip+2]) * 0.5;
+                    	Hsurf[iq+3]+= L2 * Qijcj[1] * surf[ip+3];
+                    	Hsurf[iq+4]+= L2 *(Qijcj[1] * surf[ip+4] + Qijcj[2] * surf[ip+3]) * 0.5;
+                    }
+                    if (L3!=0) {
+                    	nu_dot_Q[0] = surf[ip+2]*Qsurf[iq]  +surf[ip+3]*Qsurf[iq+1]+surf[ip+4]*Qsurf[iq+2];
+                    	nu_dot_Q[1] = surf[ip+2]*Qsurf[iq+1]+surf[ip+3]*Qsurf[iq+3]+surf[ip+4]*Qsurf[iq+4];
+                    	nu_dot_Q[2] = surf[ip+2]*Qsurf[iq+2]+surf[ip+3]*Qsurf[iq+4]-surf[ip+4]*(Qsurf[iq]+Qsurf[iq+3]);
+                    	Hsurf[iq]  += L3 * (nu_dot_Q[0]*dxQ[0]+nu_dot_Q[1]*dyQ[0]+nu_dot_Q[2]*dzQ[0]);
+                    	Hsurf[iq+1]+= L3 * (nu_dot_Q[0]*dxQ[1]+nu_dot_Q[1]*dyQ[1]+nu_dot_Q[2]*dzQ[1]);
+                    	Hsurf[iq+2]+= L3 * (nu_dot_Q[0]*dxQ[2]+nu_dot_Q[1]*dyQ[2]+nu_dot_Q[2]*dzQ[2]);
+                    	Hsurf[iq+3]+= L3 * (nu_dot_Q[0]*dxQ[3]+nu_dot_Q[1]*dyQ[3]+nu_dot_Q[2]*dzQ[3]);
+                    	Hsurf[iq+4]+= L3 * (nu_dot_Q[0]*dxQ[4]+nu_dot_Q[1]*dyQ[4]+nu_dot_Q[2]*dzQ[4]);
+                    }
+                    if (L4!=0) {
+                    	Hsurf[iq]  +=     L4* (surf[ip+2]* dxQ[0]        +surf[ip+3]* dxQ[1]        +surf[ip+4]* dxQ[2]);
+                    	Hsurf[iq+1]+= 0.5*L4* (surf[ip+2]*(dxQ[1]+dyQ[0])+surf[ip+3]*(dxQ[3]+dyQ[1])+surf[ip+4]*(dxQ[4]+dyQ[2]));
+                    	Hsurf[iq+2]+= 0.5*L4* (surf[ip+2]*(dxQ[2]+dzQ[0])+surf[ip+3]*(dxQ[4]+dzQ[1])+surf[ip+4]*(-dxQ[0]-dxQ[3]+dzQ[2]));
+                    	Hsurf[iq+3]+=     L4* (surf[ip+2]* dyQ[1]        +surf[ip+3]* dyQ[3]        +surf[ip+4]* dyQ[4]);
+                    	Hsurf[iq+4]+= 0.5*L4* (surf[ip+2]*(dyQ[2]+dzQ[1])+surf[ip+3]*(dyQ[4]+dzQ[3])+surf[ip+4]*(-dyQ[0]-dyQ[3]+dzQ[4]));
+                    }
+                    if (L2+L4!=0) {
+                    	nu_dot_dQ   = surf[ip+2]*Qijcj[0]+surf[ip+3]*Qijcj[1]+surf[ip+4]*Qijcj[2];
+                    	Hsurf[iq]  +=-(L2+L4)*third*nu_dot_dQ;
+                    	Hsurf[iq+3]+=-(L2+L4)*third*nu_dot_dQ;
+                    }
+                    if (q_ch>0) {
+                    	Hsurf[iq]  +=q_ch*L1*( 2.*(surf[ip+4]*Qsurf[iq+1]-surf[ip+3]*Qsurf[iq+2]) );
+                    	Hsurf[iq+3]+=q_ch*L1*( 2.*(surf[ip+2]*Qsurf[iq+4]-surf[ip+4]*Qsurf[iq+1]) );
+                    	Hsurf[iq+1]+=q_ch*L1*( surf[ip+4]* Qsurf[iq+3]           -surf[ip+3]* Qsurf[iq+4]           +surf[ip+2]*Qsurf[iq+2]-surf[ip+4]*Qsurf[iq]);
+                    	Hsurf[iq+2]+=q_ch*L1*( surf[ip+4]* Qsurf[iq+4]           +surf[ip+3]*(Qsurf[iq]+Qsurf[iq+3])+surf[ip+3]*Qsurf[iq]  -surf[ip+2]*Qsurf[iq+1]);
+                    	Hsurf[iq+4]+=q_ch*L1*(-surf[ip+2]*(Qsurf[iq]+Qsurf[iq+3])-surf[ip+4]* Qsurf[iq+2]           +surf[ip+3]*Qsurf[iq+1]-surf[ip+2]*Qsurf[iq+3]);
+                    }
+                    if (flag==1 && surf[ip]==1) {
+                    	for (ii=0; ii<5; ii++) {
+                    		e_sfi += surf[ip+1]*(Qsurf[iq+ii]-surf[ip+5+ii])*(Qsurf[iq+ii]-surf[ip+5+ii]);
+                    	}
+                    	e_sfi += surf[ip+1]*(Qsurf[iq]-surf[ip+5])*(Qsurf[iq+3]-surf[ip+5+3]);
+                    }
 				}
 			}
 		}
@@ -1154,7 +1200,6 @@ void cal_dQ()
 	MPI_Reduce(&e_ldi, &e_ld, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
     MPI_Reduce(&e_eli, &e_el, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
     MPI_Reduce(&e_sfi, &e_sf, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
-    MPI_Reduce(&e_lyi, &e_ly, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
 	MPI_Reduce(&e_chi, &e_ch, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
     MPI_Reduce(&e_L1i, &e_L1, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
     MPI_Reduce(&e_L2i, &e_L2, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
@@ -1165,88 +1210,11 @@ void cal_dQ()
     e_L3 *= (0.5 * L3);
     e_L4 *= (0.5 * L4);
 	e_el  = e_L1 + e_L2 + e_L3 + e_L4;
-	if (myid==root) e_tot = e_ld + e_L1 + e_L2 + e_L3 + e_L4 + e_sf + e_ch + e_ly;
+	if (myid==root) e_tot = e_ld + e_L1 + e_L2 + e_L3 + e_L4 + e_sf + e_ch;
 	MPI_Barrier(MPI_COMM_WORLD);
 	if (wall_x!=0 || wall_y!=0 || wall_z!=0 || npar>0) MPI_Win_fence(0, winHsurf);	
 }
 
-
-
-void evol_phi()
-{
-    int id, ib, ii, ip1, ip2, nid[6], flag;
-    double dx_phi, dy_phi, dz_phi, d2x_mu, d2y_mu, d2z_mu, phi, phi2, phi_diffi;
-
-	if (t_current%t_print==0) {
-		phi_diffi= 0;
-		flag     = 1;
-	}
-
-	for (id=0; id<lpoint; id++){
-		if (info[id]==-1) {
-			for (ii=0; ii<6; ii++) {
-				nid[ii] = neighb[id*6+ii];
-			}
-            dx_phi = 0.;
-            dy_phi = 0.;
-            dz_phi = 0.;
-            d2x_mu = 0.;
-            d2y_mu = 0.;
-            d2z_mu = 0.;
-			
-			ip1 = nid[0];
-			ip2 = nid[1];
-			if (ip1%5==0 && ip2%5==0) {
-                dx_phi = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
-                d2x_mu = ly_mu[ip2/5] - 2.*ly_mu[id] + ly_mu[ip1/5];
-			} else if (ip1%5!=0 && ip2%5==0) {
-                dx_phi = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
-                d2x_mu = ly_mu[ip2/5] - ly_mu[id];
-			} else if (ip1%5==0 && ip2%5!=0) {
-                dx_phi = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
-                d2x_mu = ly_mu[ip1/5] - ly_mu[id];
-			}
-
-			ip1 = nid[2];
-			ip2 = nid[3];
-			if (ip1%5==0 && ip2%5==0) {
-                dy_phi = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
-                d2y_mu = ly_mu[ip2/5] - 2.*ly_mu[id] + ly_mu[ip1/5];
-			} else if (ip1%5!=0 && ip2%5==0) {
-                dy_phi = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
-                d2y_mu = ly_mu[ip2/5] - ly_mu[id];
-			} else if (ip1%5==0 && ip2%5!=0) {
-                dy_phi = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
-                d2y_mu = ly_mu[ip1/5] - ly_mu[id];
-			}
-			
-			ip1 = nid[4];
-			ip2 = nid[5];
-			if (ip1%5==0 && ip2%5==0) {
-                dz_phi = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
-                d2z_mu = ly_mu[ip2/5] - 2.*ly_mu[id] + ly_mu[ip1/5];
-			} else if (ip1%5!=0 && ip2%5==0) {
-                dz_phi = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
-                d2z_mu = ly_mu[ip2/5] - ly_mu[id];
-			} else if (ip1%5==0 && ip2%5!=0) {
-                dz_phi = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
-                d2z_mu = ly_mu[ip1/5] - ly_mu[id];
-			}
-
-            ly_dphi[id] = ly_Gamma*(d2x_mu+d2y_mu+d2z_mu);
-            if (flow_on!=0) ly_dphi[id]+= -u[id*3]*dx_phi-u[id*3+1]*dy_phi-u[id*3+2]*dz_phi; 
-        }
-    }
-
-	for (id=0; id<lpoint; id++){
-		if (info[id]==-1) {
-            ly_phi[id] += qdt * ly_dphi[id];
-            if (flag==1) phi_diffi += ly_dphi[id]*ly_dphi[id];
-        }
-    }
-
-	if(flag==1) MPI_Reduce(&phi_diffi, &phi_diff, 1, MPI_DOUBLE, MPI_SUM, root, MPI_COMM_WORLD);
-}
 
 
 void cal_stress2()
@@ -1278,12 +1246,6 @@ void cal_stress2()
             dx_phi = 0.;
             dy_phi = 0.;
             dz_phi = 0.;
-            d2x_phi= 0.;
-            d2y_phi= 0.;
-            d2z_phi= 0.;
-            dx_mu  = 0.;
-            dy_mu  = 0.;
-            dz_mu  = 0.;
 			
 			ip1 = nid[0];
 			ip2 = nid[1];
@@ -1292,29 +1254,20 @@ void cal_stress2()
 					dxQ[ii] = 0.5 * (Q[ip2+ii] - Q[ip1+ii]);
 					d2xQ[ii]= Q[ip2+ii] - 2.0 * Q[iq+ii] + Q[ip1+ii];
 				}
-                dx_phi = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
-                d2x_phi= ly_phi[ip2/5] - 2.*ly_phi[id] + ly_phi[ip1/5];
-                dx_mu  = 0.5*(ly_mu[ip2/5] - ly_mu[ip1/5]);
 			} else if (ip1%5!=0 && ip2%5==0) {
 				for (ii=0; ii<5; ii++) {
 					dxQ[ii] = third*Q[ip2+ii]+*(p+ii)-four3rd*Qsurf[ip1+1+ii];
 					d2xQ[ii]= four3rd*Q[ip2+ii]-4.0*(*(p+ii))+eight3rd*Qsurf[ip1+1+ii];
 				}
-                dx_phi = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
-                d2x_phi= ly_phi[ip2/5] - ly_phi[id];
-                dx_mu  = 0.5*(ly_mu[ip2/5] - ly_mu[id]);
 			} else if (ip1%5==0 && ip2%5!=0) {
 				for (ii=0; ii<5; ii++) {
 					dxQ[ii] = four3rd*Qsurf[ip2+1+ii]-*(p+ii)-third*Q[ip1+ii];
 					d2xQ[ii]= eight3rd*Qsurf[ip2+1+ii]-4.0*(*(p+ii))+four3rd*Q[ip1+ii];
 				}
-                dx_phi = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
-                d2x_phi= ly_phi[ip1/5] - ly_phi[id];
-                dx_mu  = 0.5*(ly_mu[id] - ly_mu[ip1/5]);
 			} else if (ip1%5!=0 && ip2%5!=0) {
                 for (ii=0; ii<5; ii++) {
-                        dxQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
-                        d2xQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
+                    dxQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
+                    d2xQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
                 }
 			} else {
 				printf("surface too close\n");
@@ -1328,29 +1281,20 @@ void cal_stress2()
 					dyQ[ii] = 0.5 * (Q[ip2+ii] - Q[ip1+ii]);
 					d2yQ[ii]= Q[ip1+ii] - 2.0 * Q[iq+ii] + Q[ip2+ii];
 				}
-                dy_phi = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
-                d2y_phi= ly_phi[ip2/5] - 2.*ly_phi[id] + ly_phi[ip1/5];
-                dy_mu  = 0.5*(ly_mu[ip2/5] - ly_mu[ip1/5]);
 			} else if (ip1%5!=0 && ip2%5==0) {
 				for (ii=0; ii<5; ii++) {
 					dyQ[ii] = third*Q[ip2+ii]+*(p+ii)-four3rd*Qsurf[ip1+1+ii];
 					d2yQ[ii]= four3rd*Q[ip2+ii]-4.0*(*(p+ii))+eight3rd*Qsurf[ip1+1+ii];
 				}
-                dy_phi = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
-                d2y_phi= ly_phi[ip2/5] - ly_phi[id];
-                dy_mu  = 0.5*(ly_mu[ip2/5] - ly_mu[id]);
 			} else if (ip1%5==0 && ip2%5!=0) {
 				for (ii=0; ii<5; ii++) {
 					dyQ[ii] = four3rd*Qsurf[ip2+1+ii]-*(p+ii)-third*Q[ip1+ii];
 					d2yQ[ii]= eight3rd*Qsurf[ip2+1+ii]-4.0*(*(p+ii))+four3rd*Q[ip1+ii];
 				}
-                dy_phi = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
-                d2y_phi= ly_phi[ip1/5] - ly_phi[id];
-                dy_mu  = 0.5*(ly_mu[id] - ly_mu[ip1/5]);
             } else if (ip1%5!=0 && ip2%5!=0) {
                 for (ii=0; ii<5; ii++) {
-                        dyQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
-                        d2yQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
+                    dyQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
+                    d2yQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
                 }
 			} else {
 				printf("surface too close\n");
@@ -1364,53 +1308,89 @@ void cal_stress2()
 					dzQ[ii] = 0.5 * (Q[ip2+ii] - Q[ip1+ii]);
 					d2zQ[ii]= Q[ip1+ii] - 2.0 * Q[iq+ii] + Q[ip2+ii];
 				}
-                dz_phi = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
-                d2z_phi= ly_phi[ip2/5] - 2.*ly_phi[id] + ly_phi[ip1/5];
-                dz_mu  = 0.5*(ly_mu[ip2/5] - ly_mu[ip1/5]);
 			} else if (ip1%5!=0 && ip2%5==0) {
 				for (ii=0; ii<5; ii++) {
 					dzQ[ii] = third*Q[ip2+ii]+*(p+ii)-four3rd*Qsurf[ip1+1+ii];
 					d2zQ[ii]= four3rd*(Q[ip2+ii]-*(p+ii))+eight3rd*(Qsurf[ip1+1+ii]-*(p+ii));					
 				}
-                dz_phi = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
-                d2z_phi= ly_phi[ip2/5] - ly_phi[id];
-                dz_mu  = 0.5*(ly_mu[ip2/5] - ly_mu[id]);
 			} else if (ip1%5==0 && ip2%5!=0) {
 				for (ii=0; ii<5; ii++) {
 					dzQ[ii] =-(third*Q[ip1+ii]+*(p+ii)-four3rd*Qsurf[ip2+1+ii]);
 					d2zQ[ii]= four3rd*(Q[ip1+ii]-*(p+ii))+eight3rd*(Qsurf[ip2+1+ii]-*(p+ii));
 				}
-                dz_phi = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
-                d2z_phi= ly_phi[ip1/5] - ly_phi[id];
-                dz_mu  = 0.5*(ly_mu[id] - ly_mu[ip1/5]);
             } else if (ip1%5!=0 && ip2%5!=0) {
                 for (ii=0; ii<5; ii++) {
-                        dzQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
-                        d2zQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
+                    dzQ[ii] = (Qsurf[ip2+1+ii] - Qsurf[ip1+1+ii]);
+                    d2zQ[ii]= 4.0*(Qsurf[ip2+1+ii] - 2.0 * Q[iq+ii] + Qsurf[ip1+1+ii]);
                 }
 			} else {
 				printf("surface too close\n");
 				exit(-1);
 			}
 
+            if (phi_on!=0 && ly_an!=0) {
+                ip1 = nid[0];
+                ip2 = nid[1];
+                if (ip1%5==0 && ip2%5==0) {
+                    dx_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5==0) {
+                    dx_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
+                } else if (ip1%5==0 && ip2%5!=0) {
+                    dx_phi  = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5!=0) {
+                } else {
+                	printf("surface too close\n");
+                	exit(-1);
+                }
+
+                ip1 = nid[2];
+                ip2 = nid[3];
+                if (ip1%5==0 && ip2%5==0) {
+                    dy_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5==0) {
+                    dy_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
+                } else if (ip1%5==0 && ip2%5!=0) {
+                    dy_phi  = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5!=0) {
+                } else {
+                	printf("surface too close\n");
+                	exit(-1);
+                }
+                
+                ip1 = nid[4];
+                ip2 = nid[5];
+                if (ip1%5==0 && ip2%5==0) {
+                    dz_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5==0) {
+                    dz_phi  = 0.5*(ly_phi[ip2/5] - ly_phi[id]);
+                } else if (ip1%5==0 && ip2%5!=0) {
+                    dz_phi  = 0.5*(ly_phi[id] - ly_phi[ip1/5]);
+                } else if (ip1%5!=0 && ip2%5!=0) {
+                } else {
+                	printf("surface too close\n");
+                	exit(-1);
+                }
+            }
+
 			trqq = trQQ(p);
 			
-            phi = ly_phi[id];
-            phi2= phi*phi;
-            ly_mu[id] = ly_a*phi + ly_b*phi2 + ly_c*phi*phi2 - A_ldg*ldg_b*S_lc*S_lc*trqq - ly_k*(d2x_phi+d2y_phi+d2z_phi);
-			
 			for (ii=0; ii<5; ii++) {
-                H[iq+ii] = -(A_ldg*( 2.*(ldg_a-ldg_b*phi)*S_lc*S_lc*Q[iq+ii]-3.*ldg_c*S_lc*(QQ(p,ii)-OneThirdDelta(ii)*trqq)+2.25*trqq*Q[iq+ii] ) - L1 * (d2xQ[ii]+d2yQ[ii]+d2zQ[ii]) );
+                H[iq+ii] = -(A_ldg*( 2.*(ldg_a-ldg_b)*S_lc2*Q[iq+ii]-3.*ldg_c*S_lc*(QQ(p,ii)-OneThirdDelta(ii)*trqq)+2.25*trqq*Q[iq+ii] ) - L1 * (d2xQ[ii]+d2yQ[ii]+d2zQ[ii]) );
 			}
 
-            if (ly_an!=0) {
+            if (phi_on!=0) {
+                phi = ly_phi[id];
+                for (ii=0; ii<5; ii++) H[iq+ii] += A_ldg*2.*ldg_b*(phi-1.)*S_lc2*Q[iq+ii];
+            }
+
+            if (phi_on!=0 && ly_an!=0) {
                 H[iq]  -= ly_an*(two3rd*dx_phi*dx_phi - third*dy_phi*dy_phi - third*dz_phi*dz_phi);
                 H[iq+1]-= ly_an*dx_phi*dy_phi;
                 H[iq+2]-= ly_an*dx_phi*dz_phi;
                 H[iq+3]-= ly_an*(-third*dx_phi*dx_phi + two3rd*dy_phi*dy_phi - third*dz_phi*dz_phi);
                 H[iq+4]-= ly_an*dy_phi*dz_phi;
             }
-			
+
 			if (q_ch>0) {
 				H[iq]  -= 2.*( dyQ[2] - dzQ[1] ) * twqL_ch;
 				H[iq+3]-= 2.*( dzQ[1] - dxQ[4] ) * twqL_ch;
@@ -2026,10 +2006,6 @@ void cal_stress2()
 			sigma_p[id*3]  =-2.0 * (H[iq]*dxQ[0] + H[iq+1]*dxQ[1] + H[iq+2]*dxQ[2] + H[iq+3]*dxQ[3] + H[iq+4]*dxQ[4]) - H[iq]*dxQ[3] - H[iq+3]*dxQ[0];
 			sigma_p[id*3+1]=-2.0 * (H[iq]*dyQ[0] + H[iq+1]*dyQ[1] + H[iq+2]*dyQ[2] + H[iq+3]*dyQ[3] + H[iq+4]*dyQ[4]) - H[iq]*dyQ[3] - H[iq+3]*dyQ[0];
 			sigma_p[id*3+2]=-2.0 * (H[iq]*dzQ[0] + H[iq+1]*dzQ[1] + H[iq+2]*dzQ[2] + H[iq+3]*dzQ[3] + H[iq+4]*dzQ[4]) - H[iq]*dzQ[3] - H[iq+3]*dzQ[0]; 
-
-            sigma_p[id*3]  -= dx_mu*phi;
-            sigma_p[id*3+1]-= dy_mu*phi;
-            sigma_p[id*3+2]-= dz_mu*phi;
 			
 			sum = 2.0*(Q[iq]*H[iq]+Q[iq+3]*H[iq+3]+Q[iq+1]*H[iq+1]+Q[iq+2]*H[iq+2]+Q[iq+4]*H[iq+4])+Q[iq]*H[iq+3]+Q[iq+3]*H[iq];
 
@@ -2047,8 +2023,10 @@ void cal_stress2()
 		}
 	}
 
+	MPI_Win_fence(0, wins);
 	MPI_Barrier(MPI_COMM_WORLD);
 }
+
 
 
 
@@ -2128,4 +2106,7 @@ void cal_sigma_p()
 			sigma_p[is+2]= 0;
 		}
 	}
+
+	MPI_Win_fence(0, winsigma_p);
+	MPI_Barrier(MPI_COMM_WORLD);
 }

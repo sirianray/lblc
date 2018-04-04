@@ -4,7 +4,7 @@
 void read_param()
 {
 	int ipar, i, flag;
-	double x, y, z, r, Wt, W, r2, ir, delta, phi0, t1, t2;
+	double x, y, z, r, Wt, W, r2, ir, t1, t2;
 	char junk[256], ishape;
 	FILE *param;
 
@@ -34,12 +34,13 @@ void read_param()
 	fscanf(param, "wall_x wall_y wall_z %d %d %d\n", &wall_x, &wall_y, &wall_z);
 	fscanf(param, "flow_on %d\n", &flow_on);
 	fscanf(param, "Q_on %d\n", &Q_on);
+	fscanf(param, "phi_on %d\n", &phi_on);
 
 	fscanf(param, "rand_init rand_seed q_init %d %d %le\n", &rand_init, &rand_seed, &q_init);
 	
 	fscanf(param, "t_max t_print t_write %d %d %d\n", &t_max, &t_print, &t_write);
 	
-	fscanf(param, "n_evol_Q %d\n", &n_evol_Q);
+	fscanf(param, "n_evol_Q n_evol_phi n_pre_evol %d %d %d\n", &n_evol_Q, &n_evol_phi, &n_pre_evol);
 	
 	fscanf(param, "type_xlo W_xlo n_xlo %d %lf %lf %lf %lf\n", &type_xlo, &W_xlo, &n_xlo[0], &n_xlo[1], &n_xlo[2]);
 	fscanf(param, "type_xhi W_xhi n_xhi %d %lf %lf %lf %lf\n", &type_xhi, &W_xhi, &n_xhi[0], &n_xhi[1], &n_xhi[2]);
@@ -55,9 +56,8 @@ void read_param()
 	
 	fscanf(param, "L1 L2 L3 L4 %le %le %le %le\n", &L1, &L2, &L3, &L4);
 	fscanf(param, "rho %le\n", &rho);
-    fscanf(param, "ly_a ly_b ly_c %le %le %le\n", &ly_a, &ly_b, &ly_c);
+	fscanf(param, "A_phi %le\n", &A_phi);
     fscanf(param, "ly_k ly_Gamma ly_an %le %le %le\n", &ly_k, &ly_Gamma, &ly_an);
-    if (myid==root) printf("lyotropic: a=%f, b=%f, c=%f, k=%f, Gamma=%f\n",ly_a,ly_b,ly_c,ly_k,ly_Gamma);
     fscanf(param, "ly_phi1 ly_phi2 %le %le\n", &ly_phi1, &ly_phi2);
 	fscanf(param, "A_ldg S_lc %le %le\n", &A_ldg, &S_lc);
 	fscanf(param, "q_ch %le\n", &q_ch);
@@ -138,12 +138,16 @@ void read_param()
 
 	itau_f = 1.0/tau_f;
 	qdt    = 1/(double)n_evol_Q;
+	pdt    = 1/(double)n_evol_phi;
 	xi1    = 0.5*(xi+1.0);
 	xi2    = 0.5*(xi-1.0);
 	twqL_ch= 2.*q_ch*L1;
 	
 	if (flow_on!=0) uconverge=0;
 	if (Q_on!=0)    qconverge=0;
+	if (phi_on!=0)  pconverge=0;
+
+    S_lc2  = S_lc*S_lc;
 
 //  calculate frank elastic modulii
     K1 = (2.*L1 + L2 - two3rd*S_lc*L3 + L4)*S_lc*S_lc;
@@ -219,29 +223,8 @@ void read_param()
                 exit(-1);
         }
 
-    // concentration related
-    if (ly_c<0 && myid==root) {     // ensure ly_c>0
-        printf("error: phi will diverge, c must be positive\n");
-        exit(-1);
-    }
-    if (ly_b>0 && myid==root) {     // suggest ly_b<=0
-        printf("warning: phi will be negative, b needs be negative\n");
-    }
-    delta = ly_b*ly_b - 4.*ly_a*ly_c;
-    if (delta<0 && myid==root) printf("warning: the equilibrium phi = 0\n");   
-
-    if (ly_b<0) {
-        phi0  = 0.5*(-ly_b-sqrt(delta))/ly_c;
-    } else {
-        phi0  = 0.5*(-ly_b+sqrt(delta))/ly_c;
-    }
-    if (myid==root) printf("equilibrium phi = %f\n",phi0);
-    ly_e0 = phi0*phi0*(0.5*ly_a+phi0*(third*ly_b+0.25*phi0*ly_c));
-    if (ly_e0==0 && myid==root) printf("warning: this is biphasic system\n");
-    if (ly_e0>0) {
-        if (myid==root) printf("warning: phi=0 is the global minimum state\n");
-        ly_e0 = 0;
-    }
+    // lyotropic related
+    ly_e0 = 0.;
 
     if (ly_phi1<=0 || ly_phi1>ly_phi2 || ly_phi2>=1) {
         printf("0<phi1<phi2<1 must hold\n");

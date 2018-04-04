@@ -207,23 +207,43 @@ void build_neighbor()
 		for (k=0; k<Nz; k++) {
 			km = k - 1;
 			kp = k + 1;
-			if (km<0)  km+=Nz;
-			if (kp>=Nz)kp-=Nz;
+            if (wall_z==0) {
+		        if (km<0)  km+=Nz;
+		        if (kp>=Nz)kp-=Nz;
+            }
 			for (j=0; j<Ny; j++) {
 				jm = j - 1;
 				jp = j + 1;
-				if (jm<0)  jm+=Ny;
-				if (jp>=Ny)jp-=Ny;
+                if (wall_y==0) {
+			        if (jm<0)  jm+=Ny;
+			        if (jp>=Ny)jp-=Ny;
+                }
 				// x low wall
 				id0  =  j + k* Ny;
 				if (id0/node==myid) {
 					id0  = id0%node;
 					id[0]= (    (j+k*Ny)*Nx - myid * point) * 5;
 					id[1]= (1 + (j+k*Ny)*Nx - myid * point) * 5;
-					id[2]= (jm + k *Ny - myid * node) * 5;
-					id[3]= (jp + k *Ny - myid * node) * 5;
-					id[4]= (j  + km*Ny - myid * node) * 5;
-					id[5]= (j  + kp*Ny - myid * node) * 5;
+                    if (jm<0) {
+                        id[2]= (j+1 + k *Ny - myid * node) * 5 + 1;
+					    id[3]= (j+2 + k *Ny - myid * node) * 5 + 1;
+                    } else if (jp>=Ny) {
+                        id[2]= (j-1 + k *Ny - myid * node) * 5 - 1;
+					    id[3]= (j-2 + k *Ny - myid * node) * 5 - 1;
+                    } else {
+                        id[2]= (jm + k *Ny - myid * node) * 5 - 1;
+					    id[3]= (jp + k *Ny - myid * node) * 5 + 1;
+                    }
+                    if (km<0) {
+				        id[4]= (j  + (k+1)*Ny - myid * node) * 5 + 1;
+				        id[5]= (j  + (k+2)*Ny - myid * node) * 5 + 1;
+                    } else if (kp>=Nz) {
+				        id[4]= (j  + (k-1)*Ny - myid * node) * 5 - 1;
+				        id[5]= (j  + (k-2)*Ny - myid * node) * 5 - 1;
+                    } else {
+				        id[4]= (j  + km*Ny - myid * node) * 5 - 1;
+				        id[5]= (j  + kp*Ny - myid * node) * 5 + 1;
+                    }
 					for (ii=0; ii<6; ii++) {
 						neighbsurf[6*id0+ii] = id[ii];
 					}
@@ -234,10 +254,26 @@ void build_neighbor()
 					id0  = id0%node;
 					id[0]= (Nx-1+(j+k*Ny)*Nx - myid * point) * 5;
 					id[1]= (Nx-2+(j+k*Ny)*Nx - myid * point) * 5;
-					id[2]= (jm  + k *Ny - myid * node) * 5;
-					id[3]= (jp  + k *Ny - myid * node) * 5;
-					id[4]= (j   + km*Ny - myid * node) * 5;
-					id[5]= (j   + kp*Ny - myid * node) * 5;
+                    if (jm<0) {
+                        id[2]= (j+1 + k *Ny - myid * node) * 5 + 1;
+					    id[3]= (j+2 + k *Ny - myid * node) * 5 + 1;
+                    } else if (jp>=Ny) {
+                        id[2]= (j-1 + k *Ny - myid * node) * 5 - 1;
+					    id[3]= (j-2 + k *Ny - myid * node) * 5 - 1;
+                    } else {
+                        id[2]= (jm + k *Ny - myid * node) * 5 - 1;
+					    id[3]= (jp + k *Ny - myid * node) * 5 + 1;
+                    }
+                    if (km<0) {
+				        id[4]= (j  + (k+1)*Ny - myid * node) * 5 + 1;
+				        id[5]= (j  + (k+2)*Ny - myid * node) * 5 + 1;
+                    } else if (kp>=Nz) {
+				        id[4]= (j  + (k-1)*Ny - myid * node) * 5 - 1;
+				        id[5]= (j  + (k-2)*Ny - myid * node) * 5 - 1;
+                    } else {
+				        id[4]= (j  + km*Ny - myid * node) * 5 - 1;
+				        id[5]= (j  + kp*Ny - myid * node) * 5 + 1;
+                    }
 					for (ii=0; ii<6; ii++) {
 						neighbsurf[6*id0+ii] = id[ii];
 					}
@@ -250,23 +286,43 @@ void build_neighbor()
 		for (k=0; k<Nz; k++) {
 			km = k - 1;
 			kp = k + 1;
-			if (km<0)  km+=Nz;
-			if (kp>=Nz)kp-=Nz;
+            if (wall_z==0) {
+		        if (km<0)  km+=Nz;
+		        if (kp>=Nz)kp-=Nz;
+            }
 			for (i=0; i<Nx; i++) {
 				im = i - 1;
 				ip = i + 1;
-				if (im<0)  im+=Nx;
-				if (ip>=Nx)ip-=Nx;
+                if (wall_x==0) {
+			        if (im<0)  im+=Nx;
+			        if (ip>=Nx)ip-=Nx;
+                }
 				// y low wall
 				id0  = nwally + i + k* Nx;
 				if (id0/node==myid) {
 					id0  = id0%node;
-					id[0]= (nwally + im + k *Nx - myid*node) * 5;
-					id[1]= (nwally + ip + k *Nx - myid*node) * 5;
+                    if (im<0) {
+				        id[0]= (nwally + i+1 + k *Nx - myid*node) * 5 + 1;
+				        id[1]= (nwally + i+2 + k *Nx - myid*node) * 5 + 1;
+                    } else if (ip>=Nx) {
+				        id[0]= (nwally + i-1 + k *Nx - myid*node) * 5 - 1;
+				        id[1]= (nwally + i-2 + k *Nx - myid*node) * 5 - 1;
+                    } else {
+				        id[0]= (nwally + im + k *Nx - myid*node) * 5 - 1;
+				        id[1]= (nwally + ip + k *Nx - myid*node) * 5 + 1;
+                    }
 					id[2]= (i + (     k*Ny)*Nx - myid*point) * 5;
 					id[3]= (i + (1 +  k*Ny)*Nx - myid*point) * 5;
-					id[4]= (nwally + i +  km*Nx - myid*node) * 5;
-					id[5]= (nwally + i +  kp*Nx - myid*node) * 5;
+                    if (km<0) {
+				        id[4]= (nwally + i +  (k+1)*Nx - myid*node) * 5 + 1;
+				        id[5]= (nwally + i +  (k+2)*Nx - myid*node) * 5 + 1;
+                    } else if (kp>=Nz) {
+				        id[4]= (nwally + i +  (k-1)*Nx - myid*node) * 5 - 1;
+				        id[5]= (nwally + i +  (k-2)*Nx - myid*node) * 5 - 1;
+                    } else {
+				        id[4]= (nwally + i +  km*Nx - myid*node) * 5 - 1;
+				        id[5]= (nwally + i +  kp*Nx - myid*node) * 5 + 1;
+                    }
 					for (ii=0; ii<6; ii++) {
 						neighbsurf[6*id0+ii] = id[ii];
 					}
@@ -275,12 +331,28 @@ void build_neighbor()
 				id0  = nwally + i + (k+Nz)* Nx;
 				if (id0/node==myid) {
 					id0  = id0%node;
-					id[0]= (nwally + im + k *Nx - myid*node) * 5;
-					id[1]= (nwally + ip + k *Nx - myid*node) * 5;
+                    if (im<0) {
+				        id[0]= (nwally + i+1 + k *Nx - myid*node) * 5 + 1;
+				        id[1]= (nwally + i+2 + k *Nx - myid*node) * 5 + 1;
+                    } else if (ip>=Nx) {
+				        id[0]= (nwally + i-1 + k *Nx - myid*node) * 5 - 1;
+				        id[1]= (nwally + i-2 + k *Nx - myid*node) * 5 - 1;
+                    } else {
+				        id[0]= (nwally + im + k *Nx - myid*node) * 5 - 1;
+				        id[1]= (nwally + ip + k *Nx - myid*node) * 5 + 1;
+                    }
 					id[2]= (i + (Ny-1+k*Ny)*Nx - myid*point) * 5;
 					id[3]= (i + (Ny-2+k*Ny)*Nx - myid*point) * 5;
-					id[4]= (nwally + i +  km*Nx - myid*node) * 5;
-					id[5]= (nwally + i +  kp*Nx - myid*node) * 5;
+                    if (km<0) {
+				        id[4]= (nwally + i +  (k+1)*Nx - myid*node) * 5 + 1;
+				        id[5]= (nwally + i +  (k+2)*Nx - myid*node) * 5 + 1;
+                    } else if (kp>=Nz) {
+				        id[4]= (nwally + i +  (k-1)*Nx - myid*node) * 5 - 1;
+				        id[5]= (nwally + i +  (k-2)*Nx - myid*node) * 5 - 1;
+                    } else {
+				        id[4]= (nwally + i +  km*Nx - myid*node) * 5 - 1;
+				        id[5]= (nwally + i +  kp*Nx - myid*node) * 5 + 1;
+                    }
 					for (ii=0; ii<6; ii++) {
 						neighbsurf[6*id0+ii] = id[ii];
 					}
@@ -290,24 +362,44 @@ void build_neighbor()
 	}
 
 	if (wall_z!=0) {
-                for (j=0; j<Ny; j++) {
-                        jm = j - 1;
-                        jp = j + 1;
-                        if (jm<0) jm+=Ny;
-                        if (jp>=Ny) jp-=Ny;
-                        for (i=0; i<Nx; i++) {
-                                im = i - 1;
-                                ip = i + 1;
-                                if (im<0) im+=Nx;
-                                if (ip>=Nx) ip-=Nx;
+        for (j=0; j<Ny; j++) {
+            jm = j - 1;
+            jp = j + 1;
+            if (wall_y==0) {
+                if (jm<0) jm+=Ny;
+                if (jp>=Ny) jp-=Ny;
+            }
+            for (i=0; i<Nx; i++) {
+                im = i - 1;
+                ip = i + 1;
+                if (wall_x==0) {
+                    if (im<0) im+=Nx;
+                    if (ip>=Nx) ip-=Nx;
+                }
 			// bottom wall	
 				id0  = nwallz + i + j* Nx;
 				if (id0/node==myid) {
 					id0  = id0%node;
-					id[0]= (nwallz+im+ j *Nx - myid * node) * 5;
-					id[1]= (nwallz+ip+ j *Nx - myid * node) * 5;
-					id[2]= (nwallz+i + jm*Nx - myid * node) * 5;
-					id[3]= (nwallz+i + jp*Nx - myid * node) * 5;
+                    if (im<0) {
+				        id[0]= (nwallz+i+1+ j *Nx - myid * node) * 5 + 1;
+				        id[1]= (nwallz+i+2+ j *Nx - myid * node) * 5 + 1;
+                    } else if (ip>=Nx) {
+				        id[0]= (nwallz+i-1+ j *Nx - myid * node) * 5 - 1;
+				        id[1]= (nwallz+i-2+ j *Nx - myid * node) * 5 - 1;
+                    } else {
+				        id[0]= (nwallz+im+ j *Nx - myid * node) * 5 - 1;
+				        id[1]= (nwallz+ip+ j *Nx - myid * node) * 5 + 1;
+                    }
+                    if (jm<0) {
+				        id[2]= (nwallz+i + (j+1)*Nx - myid * node) * 5 + 1;
+				        id[3]= (nwallz+i + (j+2)*Nx - myid * node) * 5 + 1;
+                    } else if (jp>=Ny) {
+				        id[2]= (nwallz+i + (j-1)*Nx - myid * node) * 5 - 1;
+				        id[3]= (nwallz+i + (j-2)*Nx - myid * node) * 5 - 1;
+                    } else {
+				        id[2]= (nwallz+i + jm*Nx - myid * node) * 5 - 1;
+				        id[3]= (nwallz+i + jp*Nx - myid * node) * 5 + 1;
+                    }
 					id[4]= (i +     j    *Nx - myid *point) * 5;
 					id[5]= (i +    (j+Ny)*Nx - myid *point) * 5;
 					for (ii=0; ii<6; ii++) {
@@ -318,10 +410,26 @@ void build_neighbor()
 				id0  =  nwallz + i + (j +Ny)*Nx;
 				if (id0/node==myid) {
 					id0  = id0%node;
-					id[0]= (nwallz+im+ (j +Ny)*Nx - myid * node) * 5;
-					id[1]= (nwallz+ip+ (j +Ny)*Nx - myid * node) * 5;
-					id[2]= (nwallz+i + (jm+Ny)*Nx - myid * node) * 5;
-					id[3]= (nwallz+i + (jp+Ny)*Nx - myid * node) * 5;
+                    if (im<0) {
+				        id[0]= (nwallz+i+1+ j *Nx - myid * node) * 5 + 1;
+				        id[1]= (nwallz+i+2+ j *Nx - myid * node) * 5 + 1;
+                    } else if (ip>=Nx) {
+				        id[0]= (nwallz+i-1+ j *Nx - myid * node) * 5 - 1;
+				        id[1]= (nwallz+i-2+ j *Nx - myid * node) * 5 - 1;
+                    } else {
+				        id[0]= (nwallz+im+ j *Nx - myid * node) * 5 - 1;
+				        id[1]= (nwallz+ip+ j *Nx - myid * node) * 5 + 1;
+                    }
+                    if (jm<0) {
+				        id[2]= (nwallz+i + (j+1)*Nx - myid * node) * 5 + 1;
+				        id[3]= (nwallz+i + (j+2)*Nx - myid * node) * 5 + 1;
+                    } else if (jp>=Ny) {
+				        id[2]= (nwallz+i + (j-1)*Nx - myid * node) * 5 - 1;
+				        id[3]= (nwallz+i + (j-2)*Nx - myid * node) * 5 - 1;
+                    } else {
+				        id[2]= (nwallz+i + jm*Nx - myid * node) * 5 - 1;
+				        id[3]= (nwallz+i + jp*Nx - myid * node) * 5 + 1;
+                    }
 					id[4]= (i + (j+(Nz-1)*Ny)*Nx - myid * point) * 5;
 					id[5]= (i + (j+(Nz-2)*Ny)*Nx - myid * point) * 5;
 					for (ii=0; ii<6; ii++) {
@@ -380,6 +488,62 @@ int next_neighbor(int id, int d1, int d2)
 	}
 	return 0;
 }
+
+
+//  a better version of next_neighbor, now id could be on a different processor
+int next_neighbor2(int id, int d1, int d2)
+{
+	int idn, myidn, idnn, herid;
+	int x, y, z, xn, yn, zn, debug;
+
+    herid = (id+myid*point)/point;
+
+	idn = neighb[id*6+d1] + (herid-myid)*point*5;
+
+	if (idn%5!=0) {
+		printf("warning: the next neighbor does not exit\n");
+		exit(-1);
+	} else {
+		idn   =  idn/5;
+		myidn = (idn+myid*point)/point;
+
+		idnn  =  neighb[idn*6+d2];
+		if (idnn%5==0) {
+			idnn +=5*(myidn-myid)*point;
+		} else {
+			idnn +=5*(myidn-myid)*node;
+		}
+
+		if (debug==1) {
+			x =  (id+myid*point)%Nx;
+			y = ((id+myid*point)/Nx)%Ny;
+			z = ((id+myid*point)/Nx)/Ny;
+			x+= e[d1+1][0]+e[d2+1][0];
+			y+= e[d1+1][1]+e[d2+1][1];
+			z+= e[d1+1][2]+e[d2+1][2];
+			if (x<0)  x+= Nx;
+			if (x>=Nx)x-= Nx;
+			if (y<0)  y+= Ny;
+			if (y>=Ny)y-= Ny;
+			if (z<0)  z+= Nz;
+			if (z>=Nz)z-= Nz;
+			xn=  (idnn/5+myid*point)%Nx;
+			yn= ((idnn/5+myid*point)/Nx)%Ny;
+			zn= ((idnn/5+myid*point)/Nx)/Ny;
+			if (x!=xn || y!=yn || z!=zn) {
+				printf("neighbor wrong!!\n");
+				exit(-1);
+			}
+		}
+
+		return idnn;
+	}
+	return 0;
+}
+
+
+
+
 void build_stream()
 {
 	int i, j, k, in, jn, kn, ii, iip, id, idn, iproc;

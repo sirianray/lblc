@@ -199,9 +199,9 @@ int onsurface_cylinder(double x, double y, double z, int ipar, double *nx, doubl
 			return 1;
 		}
 	} else if (p_pos[ipar*3+1]!=0) {
-                dx = x - cx;
-                dz = z - cz;
-                dr = sqrt(dx*dx+dz*dz);
+        dx = x - cx;
+        dz = z - cz;
+        dr = sqrt(dx*dx+dz*dz);
 		*nx= as*dx/dr;
 		*ny= 0;
 		*nz= as*dz/dr;
@@ -285,7 +285,7 @@ int onsurface_sphere(double x, double y, double z, int ipar, double *nx, double 
 
 void p_iden()
 {
-	int ipar, xlo, xhi, ylo, yhi, zlo, zhi, x1, y1, z1, x2, y2, z2, i1, j1, k1, i2, j2, k2, i3, j3, k3;
+	int ipar, xlo, xhi, ylo, yhi, zlo, zhi, x1, y1, z1, x2, y2, z2, i1, j1, k1, i2, j2, k2, i3, j3, k3, itemp;
 	int i, j, k, ii, id, id1, id2, id3, di, p1, p2, nlink=0;
 	int si, sj, sk, sid, sii, sjj, junk;
 	double x, y, z, ubx, uby, ubz, omegax, omegay, omegaz, ub_dot_e, q[6], as, nx, ny, nz, junk1, junk2, junk3;
@@ -471,6 +471,9 @@ void p_iden()
 									}
 									id3 = i3 +(j3+k3*Ny)*Nx;
 									if(nsurf/node==myid) {
+                                        // initialize neighbsurf to be -1 if not assigned
+                                        for (itemp=0; itemp<6; itemp++) neighbsurf[(nsurf%node)*6+itemp]=-1;
+
 										if (sii<sjj) {
 											neighbsurf[(nsurf%node)*6+sii-1]=(sid-myid*point)*5;
 											neighbsurf[(nsurf%node)*6+sjj-1]=(id3-myid*point)*5;
@@ -479,95 +482,6 @@ void p_iden()
 											neighbsurf[(nsurf%node)*6+sii-1]=(id3-myid*point)*5;
 										}
 									
-										// find neighbors for surface point
-										if (sii!=1 && sjj!=1) {
-											if (nx>0) di= 1;
-											if (nx<0) di=-1;
-											i3 = si - di;
-											j3 = sj;
-											k3 = sk;
-											if(i3<0)   i3 += Nx;
-											if(i3>=Nx) i3 -= Nx;
-											
-											if (onsurface(i3,j3,k3,ipar,&junk1,&junk2,&junk3)==-1) {
-												neighbsurf[(nsurf%node)*6]  = 5*(i3 +(j3+k3*Ny)*Nx - myid*point)-1;
-												i3 = si + di;
-												if(i3<0)   i3 += Nx;
-												if(i3>=Nx) i3 -= Nx;
-												neighbsurf[(nsurf%node)*6+1]= 5*(i3 +(j3+k3*Ny)*Nx - myid*point);
-											} else {
-												i3 = si + di;
-												if(i3<0)   i3 += Nx;
-												if(i3>=Nx) i3 -= Nx;
-												neighbsurf[(nsurf%node)*6]=   5*(i3 +(j3+k3*Ny)*Nx - myid*point)-2;
-												i3 = si + 2*di;
-												if(i3<0)   i3 += Nx;
-												if(i3>=Nx) i3 -= Nx;
-												neighbsurf[(nsurf%node)*6+1]= 5*(i3 +(j3+k3*Ny)*Nx - myid*point);
-											}
-										}
-										
-										if (sii!=3 && sjj!=3) {
-											if (ny>0) di= 1;
-											if (ny<0) di=-1;
-											i3 = si;
-											j3 = sj - di;
-											k3 = sk;
-											if(j3<0)   j3 += Ny;
-											if(j3>=Ny) j3 -= Ny;
-											
-											if (onsurface(i3,j3,k3,ipar,&junk1,&junk2,&junk3)==-1) {
-												neighbsurf[(nsurf%node)*6+2]= 5*(i3 +(j3+k3*Ny)*Nx -myid*point)-1;
-												j3 = sj + di;
-												if(j3<0)   j3 += Ny;
-												if(j3>=Nx) j3 -= Ny;
-												neighbsurf[(nsurf%node)*6+3]= 5*(i3 +(j3+k3*Ny)*Nx - myid*point);
-											} else {
-												j3 = sj + di;
-												if(j3<0)   j3 += Ny;
-												if(j3>=Nx) j3 -= Ny;
-												neighbsurf[(nsurf%node)*6+2]= 5*(i3 +(j3+k3*Ny)*Nx - myid*point)-2;
-												j3 = sj + 2*di;
-												if(j3<0)   j3 += Ny;
-												if(j3>=Nx) j3 -= Ny;
-												neighbsurf[(nsurf%node)*6+3]= 5*(i3 +(j3+k3*Ny)*Nx - myid*point);
-											}
-										}
-
-										if (sii!=5 && sjj!=5) {
-											if (nz>0) di= 1;
-											if (nz<0) di=-1;
-											i3 = si;
-											j3 = sj;
-											k3 = sk - di;
-											if (wall_z==0) {
-												if(k3<0)   k3 += Nz;
-												if(k3>=Nz) k3 -= Nz;
-											}
-											
-											if (onsurface(i3,j3,k3,ipar,&junk1,&junk2,&junk3)==-1) {
-												neighbsurf[(nsurf%node)*6+4]= 5*(i3 +(j3+k3*Ny)*Nx - myid*point)-1;
-												k3 = sk + di;
-												if (wall_z==0) {
-													if(k3<0)   k3 += Nz;
-													if(k3>=Nz) k3 -= Nz;
-												}
-												neighbsurf[(nsurf%node)*6+5]= 5*(i3 +(j3+k3*Ny)*Nx -myid*point);
-											} else {
-												k3 = sk + di;
-												if (wall_z==0) {
-													if(k3<0)   k3 += Nz;
-													if(k3>=Nz) k3 -= Nz;
-												}
-												neighbsurf[(nsurf%node)*6+4]= 5*(i3 +(j3+k3*Ny)*Nx - myid*point)-2;
-												k3 = sk + 2*di;
-												if (wall_z==0) {
-													if(k3<0)   k3 += Nz;
-													if(k3>=Nz) k3 -= Nz;
-												}
-												neighbsurf[(nsurf%node)*6+5]= 5*(i3 +(j3+k3*Ny)*Nx - myid*point);
-											}
-										}
 									}
 									nsurf++;
 								}
@@ -586,4 +500,79 @@ void p_iden()
 	}
 	if(flow_on!=0) MPI_Win_fence(0, winnf);
 	MPI_Barrier(MPI_COMM_WORLD);
+}
+
+void p_set_neighb()
+{
+    int id, i, j, bid, herid, sii, sjj, id1, id2, ip1, ip2, b2id;
+    int nid[6];
+
+    for (id=0; id<node; id++) {                             // sweep surf points on each processor
+        if (id+myid*node<nsurf) {                           // id: surf point id
+            for (i=0; i<6; i++) nid[i]=neighbsurf[id*6+i];  // nid[6]: neighbors of id
+            for (sii=-1, i=4; i>=0; i-=2) {
+                if (nid[i]%5==0) {
+                    bid = nid[i]/5;                         // bid: bulk point nearest to the surf point
+                    sii = i;                                // sii: orientation (in main direction) towards surface (particle/wall) 
+                    sjj = i+1;                              // sjj: orientation (in main direction) towards bulk
+                    if (surf[id*10+2+i/2]<0) {              // if nu<0, switch sii & sjj
+                        sii = i+1; 
+                        sjj = i;
+                    }
+                }
+            }
+
+            herid = (bid+myid*point)/point;                 // herid: processor id storing bid
+
+            for (i=0; i<6; i+=2) {                          // sweep 3 directions (x/y/z)
+                j = i+1;                                    // i: left (-); j: right (+)
+                if (nid[i]%5==0 && nid[j]%5==0) {           // neighbors (main direction) already set in either build_neighbor() or p_iden()
+                    b2id = nid[j]/5;
+                    if (info[b2id]!=-1) {                   // neighbor with arm 3/2 happens to be non-bulk point: 5d-1(s)
+                        neighbsurf[id*6+j] = neighb[bid*6+sjj] + (herid-myid)*node*5;
+                    }
+                } else if (nid[i]==-1 && nid[j]==-1) {      // neighbors not set yet. s: surface point; b: bulk point
+                    id1 = neighb[bid*6+i];                  // id1: left  neighbor of bulk point bid
+                    id2 = neighb[bid*6+j];                  // id2: right neighbor of bulk point bid
+
+                    if (id1%5!=0 && id2%5!=0) {             // both neighbors are surf points. left: 5d+1 (s); right: 5d-1 (s)
+                        neighbsurf[id*6+i] = id1 + (herid-myid)*node*5 + 2;
+                        neighbsurf[id*6+j] = id2 + (herid-myid)*node*5;
+                    
+                    } else if (id1%5==0 && id2%5==0) {      // both neighbors are bulk points
+                        ip1 = next_neighbor2(bid,i,sii);
+                        if (ip1%5==0) neighbsurf[id*6+i] = ip1 - 2;
+                        else neighbsurf[id*6+i] = ip1;      // left:  5d-1 (s); 5d-2 (b)
+                      
+                        ip2 = next_neighbor2(bid,j,sii);
+                        neighbsurf[id*6+j] = ip2 + 2;       // right: 5d+1 (s); 5d+2 (b)
+
+                    } else if (id1%5==0 && id2%5!=0) {      // the left is bulk and the right is surf
+                        ip1 = next_neighbor2(bid,i,sii);
+                        if (ip1%5==0) neighbsurf[id*6+i] = ip1 - 2; 
+                        else neighbsurf[id*6+i] = ip1;      // left:  5d-1 (s); 5d-2 (b)
+  
+                        id2 = next_neighbor2(bid,i,i);
+                        if (id2%5==0) {
+                            id1 = id1/5 + (herid-myid)*point;
+                            ip2 = next_neighbor2(id1,i,sii);
+                            if (ip2%5==0) neighbsurf[id*6+j] = ip2 - 2; 
+                            else neighbsurf[id*6+j] = ip2;  // right: 5d-1 (s); 5d-2 (b)
+                        } else neighbsurf[id*6+j] = 0;      // right: 0 (nonbulk)
+  
+                    } else if (id1%5!=0 && id2%5==0) {      // the right is bulk and the left is surf
+                        ip1 = next_neighbor2(bid,j,sii);
+                        neighbsurf[id*6+i] = ip1 + 2;       // left:  5d+1 (s); 5d+2 (b)
+  
+                        id1 = next_neighbor2(bid,j,j);
+                        if (id1%5==0) {
+                            id2 = id2/5 + (herid-myid)*point;
+                            ip2 = next_neighbor2(id2,j,sii);
+                            neighbsurf[id*6+j] = ip2 + 2;   // right: 5d+1 (s); 5d+2 (b)
+                        } else neighbsurf[id*6+j] = 0;      // right: 0 (nonbulk)
+                    }
+                }
+            }
+        }
+    }
 }

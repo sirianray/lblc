@@ -25,9 +25,6 @@
  neighbor[0-5]:	for bulk point is 6 neighbors in 6 directions:	+; neighbor is bulk (arm is 1);
 																-: neighbor is surface (arm is 0.5)
 				for surface point is 3 neighbors and 3 next neighbors in 3 directions
-																+ +: arms 0.5 and 1.5
-																- +: arms 1   and 1
-																- -: arms 1   and 2
 				(Exists if Q_on!=0)
  
  "direction":	0: -x; 1: +x; 2: -y; 3: +y; 4: -z; 5: +z
@@ -70,20 +67,18 @@ typedef double real;
 #define four3rd 1.3333333333333333
 #define eight3rd 2.666666666666667
 #define PI 3.1415926535897931
-#define sqrt3 1.732050807568877
 
 #define root 0
 
 extern int Nx, Ny, Nz, points, npar, nsurf, qpoints;
-extern int newrun_on, wall_x, wall_y, wall_z, flow_on, Q_on, debug_on, patch_on;
+extern int newrun_on, wall_x, wall_y, wall_z, flow_on, Q_on, debug_on, patch_on, phi_on;
 extern int rand_init, rand_seed;
 extern int t_current, t_max, t_print, t_write;
-extern int n_evol_Q,  uconverge, qconverge;
+extern int n_evol_Q,  uconverge, qconverge, pconverge, n_pre_evol, n_evol_phi;
 extern int bulk0;
 extern int type_xlo, type_xhi, type_ylo, type_yhi, type_bot, type_top;
-extern double dt, qdt, tau_f, itau_f, L1, L2, L3, L4, xi, xi1, xi2, Gamma_rot, rho, S_lc, A_ldg, Temp, e[15][3], q_init;
+extern double dt, qdt, pdt, tau_f, itau_f, L1, L2, L3, L4, xi, xi1, xi2, Gamma_rot, rho, S_lc, S_lc2, A_ldg, Temp, e[15][3], q_init;
 extern double q_ch, twqL_ch;
-//extern double k_eng, Q_diff, e_toto, e_tot, e_ld, e_el, e_sf,  e_L1, e_L2, e_L3, e_L4;
 //extern double ux_top, ux_bot, uy_top, uy_bot, xforce, yforce, zforce;
 extern double ux_lo, uy_lo, uz_lo, ux_hi, uy_hi, uz_hi, xforce, yforce, zforce; 
 extern double Q_tol, u_tol, k_eng, Q_diff, e_toto, e_tot, e_ld, e_el, e_ch, e_sf, e_L1, e_L2, e_L3, e_L4, e_ly;
@@ -92,8 +87,9 @@ extern double K1, K2, K3, K4, K24;
 extern double zeta;         // activity
 
 // lyotropic related
-extern double ly_a, ly_b, ly_c, ly_k, ly_Gamma, ly_e0, phi_diff, ly_an, ly_phi1, ly_phi2;
+extern double A_phi, ly_k, ly_Gamma, ly_e0, phi_diff, ly_an, ly_phi1, ly_phi2;
 extern double ldg_a, ldg_b, ldg_c;
+extern double ly_phi_tot, ly_phi_tot0;
 extern real *ly_phi, *ly_mu, *ly_dphi;
 extern MPI_Win winly_phi, winly_mu;
 
@@ -102,7 +98,7 @@ extern real *Q, *H, *surf, *Qsurf, *Hsurf;
 extern real *Rho, *u, *W, *f, *p, *f2, *Cf, *sigma_q, *sigma_p;
 
 extern int myid, numprocs;
-extern MPI_Win winq, wins, winr, winu, winf, winf2, winp, winQsurf, winHsurf, winneighbsurf, winsurf, winnf, wininfo, winneighb;
+extern MPI_Win winq, wins, winr, winu, winf, winf2, winp, winQsurf, winHsurf, winneighbsurf, winsurf, winnf, wininfo, winneighb, winsigma_p;
 extern MPI_Comm shmcomm;
 extern int point, lpoint, qpoint, node, nodes;
 
@@ -111,6 +107,7 @@ void ntoq(double nx, double ny, double nz, double *q0, double *q1, double *q2, d
 real randvec();
 void cal_dQ();
 void evol_Q();
+void cal_mu();
 void evol_phi();
 void init_surf();
 void build_neighbor();
@@ -137,6 +134,7 @@ int bounce(int i);
 void build_stream();
 void evol_f(real *fin, real *fout);
 void cal_stress2();
+void cal_stress_phi();
 void cal_sigma_p();
 void monitor();
 void write_restart();
@@ -145,3 +143,4 @@ void normalize(double *x, double *y, double *z);
 void add_patch();
 
 int next_neighbor(int id, int d1, int d2);
+void mirror(int l2r);       // mirror system's left state to right
