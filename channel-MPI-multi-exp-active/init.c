@@ -50,6 +50,21 @@ void init()
 							ny = randvec();
 							nz = randvec();
 						}
+                        else if (rand_init==2 || rand_init==3) {                // 2d system; 2: random random seed; 3: random with rand_seed
+                            if (q_init<0) {                                     // directors in yz plane
+							    nx = 0;
+							    ny = randvec();
+							    nz = randvec();
+                            } else if (q_init==0) {                             // directors in xz plane
+							    nx = randvec();
+							    ny = 0;
+							    nz = randvec();
+                            } else {                                            // directors in xy plane
+							    nx = randvec();
+							    ny = randvec();
+							    nz = 0;
+                            }
+                        }
 						else if (rand_init==-2 && npar>0) {                     // dipolar ansatz
                             nx = n_bot[0];
                             ny = n_bot[1];
