@@ -1,0 +1,39 @@
+# This is the parameter input file
+# rand_init: -1 - uniform; 0 - random with random seed; 1 - random with rand_seed; -2 - dipolar ansatz; -3 - BPI ansatz; -4 - BPII ansatz
+#            -5 - rotated BPI; -6 - rotated BPII
+#            -7 - escaped radial; -8 - radial planar; -9; radial; -10: twist-planar; -11: concentric: -12: escape radial with defects
+#            -13: defect annihiliation for channel; -14: defect annihilation for cylinder
+# anchoring "type" of surface: 0 - infinite; 1 - finite nondegenerate; 2 - finite degenerate
+#
+newrun_on 1 
+Nx Ny Nz 200 200 5
+npar 0
+patch_on 0
+pattern_on 0
+wall_x wall_y wall_z 0 0 0
+flow_on 1
+Q_on 1
+rand_init rand_seed q_init 2 122901 2.0
+t_max t_print t_write 200000 200 200
+n_evol_Q 2
+type_xlo W_xlo n_xlo 0  1  1 0 0
+type_xhi W_xhi n_xhi 0  0  1 0 0
+type_ylo W_ylo n_ylo 0  1  0 1 0
+type_yhi W_yhi n_yhi 0  1  0 1 0
+type_bot W_bot n_bot 2  1  0 0 1 
+type_top W_top n_top 2  1  0 0 1
+tau_f 1.
+ux_lo uy_lo uz_lo 0.000 0.000 0.000
+ux_hi uy_hi uz_hi 0.000 0.000 0.000
+xforce yforce zforce 0.0000 0.0000 0.0000
+K1 K2 K3 K24 0.0759 0.0759 0.0759 0.0759
+rho 1.0
+A_ldg 0.1
+q_ch 0.0
+U 3.5
+xi 0.8
+fr 0.01
+zetai zetao 0 0
+Gamma_rot 0.1
+ebug_on 1 
+Q_tol u_tol 1e-20 1e-15

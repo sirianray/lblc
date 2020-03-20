@@ -16,12 +16,16 @@ void init()
 			sita0 = n_top[0]*n_bot[0]+n_top[1]*n_bot[1]+n_top[2]*n_bot[2];
 			sita0 = sita0/sqrt(n_top[0]*n_top[0]+n_top[1]*n_top[1]+n_top[2]*n_top[2]);        
 			sita0 = sita0/sqrt(n_bot[0]*n_bot[0]+n_bot[1]*n_bot[1]+n_bot[2]*n_bot[2]);
+            if (sita0> 1.) sita0 = 1.;
+            if (sita0<-1.) sita0 =-1.;
 			sita0 = acos(sita0);
 			
 			if (rand_init==0) {			                                        // random random seed
 				srand((unsigned)time(&t));
-			} else if (rand_init==1) {		                                    // random seed from input
+			} else if (rand_init>=1 || rand_init<=3) {		                    // random seed from input
 				srand((unsigned)rand_seed);
+			} else if (rand_init==-101) {		                                // random seed from input
+				srand((unsigned)time(&t));
 			}
 
 			if ( (wall_x!=0 || wall_y!=0 || wall_z!=0 || npar>0) && Q_on!=0) {
@@ -50,6 +54,11 @@ void init()
 							ny = randvec();
 							nz = randvec();
 						}
+                        else if (rand_init==-101) {                             // add fluctuation to config -1
+							nx += q_init*randvec();
+							ny += q_init*randvec();
+                            nz  = 0.;
+                        }
                         else if (rand_init==2 || rand_init==3) {                // 2d system; 2: random random seed; 3: random with rand_seed
                             if (q_init<0) {                                     // directors in yz plane
 							    nx = 0;
@@ -452,27 +461,6 @@ void init()
                             cx = (double)Nx*0.5;
                             cy = (double)Ny*0.5;
                             b  = q_init;
-                            if (b>0.5*cy) b = 0.5*cy;
-                            if (i>cx-0.5*q_init && i<cx+0.5*q_init && j>cy-b && j<=cy) {
-                                th = (cy-(double)j)/b;
-                                nx = sin(th);
-                                ny = cos(th);
-                                nz = 0;
-                            } else if (i>cx-0.5*q_init && i<cx+0.5*q_init && j>cy && j<cy+b) {
-                                th = ((double)j-cy)/b;
-                                nx =-sin(th);
-                                ny = cos(th);
-                                nz = 0;
-                            } else {
-                                nx = 1.;
-                                ny = 0.;
-                                nz = 0.;
-                            }
-                        } else if (rand_init==-320) {        // defect annihilation, defect line parallel to far-field director
-                            double cx, cy, b, th;
-                            cx = (double)Nx*0.5;
-                            cy = (double)Ny*0.5;
-                            b  = rand_seed;
                             if (b>0.5*cy) b = 0.5*cy;
                             if (i>cx-0.5*q_init && i<cx+0.5*q_init && j>cy-b && j<=cy) {
                                 th = (cy-(double)j)/b;
