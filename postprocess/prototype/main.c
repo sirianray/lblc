@@ -1,5 +1,5 @@
 /*
- * propotype postprocess file
+ * prototype postprocess program
  *
  * Author: Rui Zhang (Sirius)
  * Date: Oct/22/2020
@@ -15,21 +15,18 @@
 #define PI 3.1415926535897931
 
 int main(int argc, char *argv[]) {
-    FILE *param, *qfile, *ofile;
+    FILE *param, *tfile, *qfile, *ofile;
 
-    int iarg, direc=0, Nx=0, Ny=0, Nz=0, Np, S_flag=-1;
-    int frame1=1, frame2=-1, eof, eof2, lines, id, i, j, k, id1, id2, id3, N1, N2, N3, itype, idd;
-    int ijunk, iflag, id1mask, id3mask, info;
+    int iarg, Nx=0, Ny=0, Nz=0, Np, S_flag;
+    int frame1=1, frame2=-1, eof, eof2, lines, id, i, j, k, itype;
+    int ijunk, iflag, info;
 
     float a[9], w[3];
-
-    double n_e=1.2, n_o=1., lambda=50., ilambda, vec_e[3]={0.}, S0=0.;
-    double rsq, ir, ne, gi, sing, cosg, ai, sina, cosa, dot;
-    double complex vec_p[2]={1.,0.}, vec_a[2]={0.,1.}, polx, poly, polxn, polyn;
-    double complex e_ne, e_no, T[3]={0.};
+    double S0;
 
     char junk[256], fname[256];
 
+    int *type;
     float *nx, *ny, *nz, *S;
 
 //  user-specified parameters
@@ -92,15 +89,18 @@ int main(int argc, char *argv[]) {
     ny = malloc(Np * sizeof(float));
     nz = malloc(Np * sizeof(float));
     S  = malloc(Np * sizeof(float));
+    type = malloc(Np * sizeof(int));
 
 //  read Q_3d.out & type_3d.out, calculate image
     printf("\nreading:\n");
     qfile = fopen("Q_3d.out", "r");
+    tfile = fopen("type_3d.out", "r");
     eof   = 0;      // end of file flag
     lines = 0;      // current frame
 
     // pre-read
 	eof = fscanf(qfile,"%f %f %f %f %f\n",&a[0],&a[3],&a[6],&a[4],&a[7]);
+    eof2= fscanf(tfile,"%d\n", &itype);
 
 	while (eof>=0 && (lines<frame2 || frame2<0)) {
 		lines++;
@@ -108,7 +108,8 @@ int main(int argc, char *argv[]) {
 
 //      reading Q & type
         for (id=0; id<Np; id++) {
-			if (eof > 0 && lines >= frame1) {
+            if (eof2> 0) type[id] = itype;
+			if (eof > 0 && lines >= frame1 && type[id] == -1) {
 				a[8] = -1*(a[0] + a[4]);
 				info = LAPACKE_ssyev(LAPACK_COL_MAJOR, 'v', 'u', 3, a, 3, w);
 
@@ -124,6 +125,7 @@ int main(int argc, char *argv[]) {
             }
             // post-read
 			eof = fscanf(qfile,"%f %f %f %f %f\n",&a[0],&a[3],&a[6],&a[4],&a[7]);
+            eof2= fscanf(tfile,"%d\n", &itype);
         }
 
         printf("\n");
@@ -137,12 +139,14 @@ int main(int argc, char *argv[]) {
 
 //  close file
     fclose(qfile);
+    fclose(tfile);
 
 //  deallocation
     free(nx);
     free(ny);
     free(nz);
     free(S);
+    free(type);
 
     printf("done.\n");
 
