@@ -135,8 +135,8 @@ int main(){
 			fprintf(file,"\n");
                         fprintf(file,"VECTORS stress float\n");
 			for(i=0;i<points;i++){
-                        	fscanf(sfile,"%f %f %f\n",&u[0],&u[1],&u[2]);
-                        	fprintf(file,"\t%f\t%f\t%f\n",u[0],u[1],u[2]);
+                        	fscanf(sfile,"%e %e %e\n",&u[0],&u[1],&u[2]);
+                        	fprintf(file,"\t%e\t%e\t%e\n",u[0],u[1],u[2]);
                 	}
 		}
 
