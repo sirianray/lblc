@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 	if (Q_on!=0) cal_dQ();
 
 	if (Q_on!=0 && flow_on!=0 && newrun_on!=0) {
-		while(qconverge==0 && (t_current<5000 || npar>0 && t_current<20000 )) {
+		while(qconverge==0 && (t_current<5000 || (npar>0 && t_current<20000) )) {
 			t_current++;
 			for (ii=0; ii<n_evol_Q; ii++) {
                 cal_dQ();

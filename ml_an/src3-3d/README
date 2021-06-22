@@ -1,8 +1,13 @@
-This is a 3D code which outputs S.out, nx.out, ny.out, nz.out
+same as the svn commited folder channel-MPI-multi
 
-In these outputs, each line corresponds to all the configurations at certain time. Say t_max=2000, t_write=200, *.out will contain 11 lines, corresponding to time t=0,200,400,...,2000.
-Within each line, x-coordinate is firstly sweeped (from 0 to Nx-1 with fixed y & z), then y-coordinate (0 to Ny-1 with fixed z), lastly z-coordinate (0 to Nz-1).
 
-unit vector n=(nx,ny,nz) is aligned with that in the previous point (while they are writing to output files). For example, n(x=10,y=10,z=19) is aligned with n(x=11,y=10,z=19), and n(x=19,y=19,z=4) is aligned with n(x=0,y=0,z=5) given Nx=Ny=Nz=20, etc.
+We calculate stress for multi-elastic-constant system
 
-To run it, intelmpi/5.0+intel-15.0 and mkl/2017 should be loaded.
+
+based on channel-MPI-multi, surface derivative calculations are updated
+
+Sep/15/2017:
+based on channel-MPI-multi-exp, add activity
+
+Sep/24/2019:
+based on channel-MPI-multi-exp-active

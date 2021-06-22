@@ -1,10 +1,12 @@
 /*
  * output Omega, beta for defect points
  * inputs:  param.in, Q_3d.out, type_3d.out
- * outputs: movie*.vtk
+ * outputs: movie*.vtk (use 'nv' to turn off)
+ *          beta* (optional, use 'b' to enforce)
  *
  * Author: Rui Zhang (Sirius)
- * Date: Jun/14/2020
+ * Date: Jun/14/2021
+ * Modified: Jun/22/2021
  * Copyright reserved
  * */
 

@@ -137,3 +137,8 @@ void normalize(double *x, double *y, double *z);
 void add_patch();
 
 int next_neighbor(int id, int d1, int d2);
+int next_neighbor2(int id, int d1, int d2);
+void cal_W();
+void allocate();
+void deallocate();
+void init();
